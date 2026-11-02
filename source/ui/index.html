@@ -1,0 +1,704 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Prohod</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%239584FF'/%3E%3Cstop offset='.5' stop-color='%236C72F5'/%3E%3Cstop offset='1' stop-color='%233FA8F5'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M32 0C50 0 58 0 61 3s3 11 3 29 0 26-3 29-11 3-29 3-26 0-29-3-3-11-3-29 0-26 3-29S14 0 32 0Z' fill='url(%23g)'/%3E%3Cpath d='M21 47V31a11 11 0 0 1 22 0v16' fill='none' stroke='white' stroke-width='7' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='40' r='4.5' fill='white'/%3E%3C/svg%3E">
+<style>
+/* Цвета анимируются плавно благодаря регистрации свойств */
+@property --c  { syntax: "<color>"; inherits: true; initial-value: #8E8E93; }
+@property --c2 { syntax: "<color>"; inherits: true; initial-value: #8E8E93; }
+
+:root {
+  --sans: "Segoe UI Variable Text", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+  --display: "Segoe UI Variable Display", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+  --mono: "Cascadia Mono", "Cascadia Code", Consolas, monospace;
+
+  --bg: #F2F2F7;
+  --bg-glow-1: rgba(110, 91, 242, .14);
+  --bg-glow-2: rgba(62, 155, 255, .10);
+  --glow-on: rgba(52, 199, 89, .16);
+  --card: rgba(255, 255, 255, .80);
+  --card-solid: #FFFFFF;
+  --card-border: rgba(0, 0, 0, .05);
+  --separator: rgba(60, 60, 67, .13);
+  --text: #1C1C1E;
+  --text-2: rgba(60, 60, 67, .80);
+  --text-3: rgba(60, 60, 67, .60);
+  --fill: rgba(120, 120, 128, .12);
+  --fill-hover: rgba(120, 120, 128, .18);
+  --track: rgba(120, 120, 128, .16);
+  --accent: #6E5BF2;
+  --accent-2: #3E9BFF;
+  --accent-ink: #5B47E0;
+  --accent-soft: rgba(110, 91, 242, .11);
+  --green: #34C759;
+  --green-2: #1FB89A;
+  --green-ink: #248A3D;
+  --orange: #FF9500;
+  --orange-ink: #C45A00;
+  --red: #FF3B30;
+  --red-ink: #D70015;
+  --face-top: #FFFFFF;
+  --face-bot: #EDEDF2;
+  --face-shadow: 0 12px 26px -8px rgba(30, 30, 60, .22), 0 2px 4px rgba(0, 0, 0, .05), inset 0 1px 0 #fff, 0 0 0 .5px rgba(0, 0, 0, .07);
+  --shadow: 0 1px 2px rgba(0, 0, 0, .04), 0 8px 24px rgba(0, 0, 0, .05);
+  --shadow-lg: 0 24px 60px rgba(0, 0, 0, .18), 0 0 0 .5px rgba(0, 0, 0, .06);
+  --scrim: rgba(0, 0, 0, .26);
+  --knob: #FFFFFF;
+
+  --r-card: 22px;
+  --r-ctl: 12px;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  --spring: cubic-bezier(.3, 1.35, .5, 1);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0A0A0D;
+    --bg-glow-1: rgba(123, 104, 246, .22);
+    --bg-glow-2: rgba(62, 155, 255, .10);
+    --glow-on: rgba(48, 209, 88, .14);
+    --card: rgba(30, 30, 34, .72);
+    --card-solid: #1C1C1F;
+    --card-border: rgba(255, 255, 255, .07);
+    --separator: rgba(255, 255, 255, .08);
+    --text: #F5F5F7;
+    --text-2: rgba(235, 235, 245, .66);
+    --text-3: rgba(235, 235, 245, .42);
+    --fill: rgba(118, 118, 128, .20);
+    --fill-hover: rgba(118, 118, 128, .30);
+    --track: rgba(255, 255, 255, .08);
+    --accent: #9D8FFF;
+    --accent-2: #5AB8FF;
+    --accent-ink: #B3A8FF;
+    --accent-soft: rgba(157, 143, 255, .16);
+    --green: #30D158;
+    --green-ink: #30D158;
+    --orange: #FF9F0A;
+    --orange-ink: #FFB340;
+    --red: #FF453A;
+    --red-ink: #FF6961;
+    --face-top: #2B2B31;
+    --face-bot: #18181B;
+    --face-shadow: 0 16px 32px -8px rgba(0, 0, 0, .7), inset 0 1px 0 rgba(255, 255, 255, .09), 0 0 0 1px rgba(255, 255, 255, .05);
+    --shadow: inset 0 1px 0 rgba(255, 255, 255, .03), 0 10px 30px rgba(0, 0, 0, .35);
+    --shadow-lg: 0 30px 80px rgba(0, 0, 0, .6), 0 0 0 1px rgba(255, 255, 255, .06);
+    --scrim: rgba(0, 0, 0, .5);
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body {
+  font: 14px/1.4 var(--sans);
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  overflow: hidden;
+}
+/* фоновое свечение; при работающем обходе мягко добавляется зелёное */
+body::before, body::after { content: ""; position: fixed; inset: 0; pointer-events: none; }
+body::before {
+  background:
+    radial-gradient(110% 55% at 50% -12%, var(--bg-glow-1), transparent 62%),
+    radial-gradient(80% 45% at 100% 105%, var(--bg-glow-2), transparent 60%);
+}
+body::after {
+  background: radial-gradient(90% 42% at 50% 14%, var(--glow-on), transparent 66%);
+  opacity: 0; transition: opacity .9s ease;
+}
+body:has(#s-main.active #power[data-state="on"])::after { opacity: 1; }
+
+button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
+button:disabled { cursor: default; opacity: .4; }
+button:focus-visible, a:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.app { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; }
+.screen {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  padding: 12px 16px 14px; gap: 10px;
+  opacity: 0; transform: translateX(22px); pointer-events: none;
+  transition: opacity .28s ease, transform .42s var(--ease);
+  overflow-y: auto; scrollbar-width: none;
+}
+.screen::-webkit-scrollbar { display: none; }
+.screen.active { opacity: 1; transform: none; pointer-events: auto; }
+.screen.back { transform: translateX(-22px); }
+
+/* ---- шапка */
+.top { display: flex; align-items: center; gap: 10px; min-height: 36px; flex: none; }
+.logo { width: 30px; height: 30px; flex: none; filter: drop-shadow(0 4px 10px rgba(110, 91, 242, .35)); }
+.brand { font: 600 19px/1 var(--display); letter-spacing: -.3px; }
+.spacer { flex: 1; }
+.chip {
+  display: inline-flex; align-items: center; gap: 7px; height: 28px; padding: 0 12px 0 10px;
+  border-radius: 999px; background: var(--fill); color: var(--text-2);
+  font-size: 12px; font-weight: 600; transition: background .4s, color .4s;
+}
+.dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex: none; }
+.chip[data-tone="on"] { background: rgba(52, 199, 89, .15); color: var(--green-ink); }
+.chip[data-tone="on"] .dot { box-shadow: 0 0 0 3px rgba(52, 199, 89, .22); }
+.chip[data-tone="starting"] { background: rgba(255, 149, 0, .15); color: var(--orange-ink); }
+.chip[data-tone="error"] { background: rgba(255, 59, 48, .13); color: var(--red-ink); }
+.chip[data-tone="starting"] .dot { animation: blink 1s infinite; }
+@keyframes blink { 50% { opacity: .25; } }
+
+.back-btn {
+  width: 34px; height: 34px; border-radius: 50%; background: var(--fill); flex: none;
+  display: grid; place-items: center; transition: background .2s, transform .15s;
+}
+.back-btn:hover { background: var(--fill-hover); }
+.back-btn:active { transform: scale(.92); }
+.back-btn svg { width: 16px; height: 16px; }
+.page-title { font: 600 21px/1 var(--display); letter-spacing: -.4px; }
+
+/* ---- кнопка питания: свечение, кольцо-дорожка, выпуклая «линза», волны */
+.hero { display: flex; flex-direction: column; align-items: center; flex: none; }
+.power {
+  --c: var(--track); --c2: var(--track); --ink: var(--text-3);
+  position: relative; width: 136px; height: 136px; border-radius: 50%;
+  display: grid; place-items: center;
+  transition: transform .3s var(--ease), --c .5s ease, --c2 .5s ease;
+}
+.power:hover { transform: scale(1.025); }
+.power:active { transform: scale(.96); transition-duration: .12s; }
+.power:focus-visible { outline-offset: 4px; }
+.power .glow {
+  position: absolute; inset: -14px; border-radius: 50%;
+  background: radial-gradient(circle, var(--c) 0%, transparent 66%);
+  opacity: 0; filter: blur(22px); transition: opacity .6s;
+}
+.power .ring {
+  position: absolute; inset: 6px; border-radius: 50%;
+  background: conic-gradient(from 200deg, var(--c), var(--c2), var(--c));
+  -webkit-mask: radial-gradient(closest-side, transparent calc(100% - 4.5px), #000 calc(100% - 4px));
+          mask: radial-gradient(closest-side, transparent calc(100% - 4.5px), #000 calc(100% - 4px));
+}
+.power .face {
+  position: relative; width: 100px; height: 100px; border-radius: 50%;
+  background: linear-gradient(180deg, var(--face-top), var(--face-bot));
+  box-shadow: var(--face-shadow);
+  display: grid; place-items: center; overflow: hidden;
+  transition: box-shadow .5s ease;
+}
+/* цветная заливка «линзы» во включённом состоянии */
+.power .face::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  background:
+    radial-gradient(120% 80% at 30% 0%, rgba(255, 255, 255, .38), transparent 55%),
+    linear-gradient(160deg, var(--c), var(--c2));
+  opacity: 0; transition: opacity .5s ease;
+}
+.power svg { position: relative; width: 34px; height: 34px; color: var(--ink); transition: color .4s ease; }
+.power::before, .power::after {
+  content: ""; position: absolute; inset: 18px; border-radius: 50%;
+  border: 1.5px solid var(--c); opacity: 0; pointer-events: none;
+}
+
+.power[data-state="off"]:hover { --c: var(--accent); --c2: var(--accent-2); --ink: var(--accent); }
+.power[data-state="on"] { --c: var(--green); --c2: var(--green-2); --ink: #fff; }
+.power[data-state="starting"] { --c: var(--orange); --c2: var(--orange); --ink: var(--orange-ink); }
+.power[data-state="error"] { --c: var(--red); --c2: var(--red); --ink: var(--red-ink); }
+
+.power[data-state="on"] .glow { opacity: .55; animation: breathe 4s ease-in-out infinite; }
+.power[data-state="on"] .face { box-shadow: 0 14px 30px -6px color-mix(in srgb, var(--green) 55%, transparent), inset 0 -6px 14px rgba(0, 0, 0, .10); }
+.power[data-state="on"] .face::before { opacity: 1; }
+.power[data-state="on"]::before { animation: wave 3.6s cubic-bezier(.2, .6, .3, 1) infinite; }
+.power[data-state="on"]::after { animation: wave 3.6s cubic-bezier(.2, .6, .3, 1) 1.8s infinite; }
+.power[data-state="starting"] .glow { opacity: .28; }
+.power[data-state="starting"] .ring {
+  background: conic-gradient(from 0deg, transparent 0 45%, var(--c) 100%), var(--track);
+  animation: spin 1.1s linear infinite;
+}
+.power[data-state="error"] .glow { opacity: .3; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes breathe { 50% { opacity: .3; transform: scale(.92); } }
+@keyframes wave { 0% { transform: scale(1); opacity: .5; } 100% { transform: scale(1.45); opacity: 0; } }
+
+.status-title { margin-top: 6px; font: 600 22px/1.2 var(--display); letter-spacing: -.5px; text-align: center; }
+.status-sub { margin-top: 2px; color: var(--text-2); text-align: center; font-size: 13px; max-width: 340px; min-height: 18px; }
+
+.pills { display: flex; gap: 8px; justify-content: center; margin-top: 12px; }
+.pill {
+  display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 12px 0 9px;
+  border-radius: 999px; background: var(--card); border: 1px solid var(--card-border);
+  box-shadow: var(--shadow); backdrop-filter: blur(20px) saturate(1.6);
+  font-weight: 600; font-size: 12.5px;
+}
+.pill svg { width: 16px; height: 16px; flex: none; }
+.pill .dot { width: 6px; height: 6px; margin-left: 2px; color: var(--text-3); transition: color .3s; }
+.pill .note { color: var(--text-3); font-variant-numeric: tabular-nums; transition: color .3s; }
+.pill .note:empty { display: none; }
+.pill[data-tone="ok"] .dot, .pill[data-tone="ok"] .note { color: var(--green-ink); }
+.pill[data-tone="warn"] .dot, .pill[data-tone="warn"] .note,
+.pill[data-tone="wait"] .dot, .pill[data-tone="wait"] .note { color: var(--orange-ink); }
+.pill[data-tone="bad"] .dot, .pill[data-tone="bad"] .note { color: var(--red-ink); }
+.pill[data-tone="wait"] .dot { animation: blink 1s infinite; }
+
+/* ---- карточки */
+.card {
+  flex: none; background: var(--card); border: 1px solid var(--card-border); border-radius: var(--r-card);
+  box-shadow: var(--shadow); backdrop-filter: blur(24px) saturate(1.6);
+  padding: 12px 14px;
+}
+.card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 0 2px 8px; }
+.eyebrow { font-size: 13px; font-weight: 600; color: var(--text-2); }
+.meta { font-size: 12px; color: var(--text-3); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.select {
+  width: 100%; height: 44px; padding: 0 12px 0 14px; border-radius: var(--r-ctl); background: var(--fill);
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; font-weight: 600;
+  transition: background .2s;
+}
+.select > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.select:hover:not(:disabled) { background: var(--fill-hover); }
+.select svg { width: 14px; height: 14px; flex: none; color: var(--text-3); transition: transform .3s var(--ease); }
+.select[aria-expanded="true"] svg { transform: rotate(180deg); }
+
+.btn {
+  position: relative; width: 100%; height: 42px; border-radius: var(--r-ctl); font-weight: 600;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  transition: background .2s, transform .15s, box-shadow .2s, filter .2s, color .2s;
+}
+.btn:active:not(:disabled) { transform: scale(.97); }
+.btn svg { width: 16px; height: 16px; flex: none; }
+a.btn { text-decoration: none; color: var(--accent-ink); }
+.btn-tint { background: var(--accent-soft); color: var(--accent-ink); }
+.btn-tint:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 18%, transparent); }
+.btn-primary {
+  color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  box-shadow: 0 8px 20px -4px rgba(110, 91, 242, .45), inset 0 1px 0 rgba(255, 255, 255, .22);
+}
+.btn-primary:hover:not(:disabled) { filter: brightness(1.07); box-shadow: 0 10px 26px -4px rgba(110, 91, 242, .55), inset 0 1px 0 rgba(255, 255, 255, .22); }
+.btn-primary:disabled { box-shadow: none; }
+.btn-plain { background: var(--fill); }
+.btn-plain:hover:not(:disabled) { background: var(--fill-hover); }
+
+/* подбор идёт: искра вращается, внизу бежит полоска прогресса */
+.btn-tint.stop { color: var(--text); overflow: hidden; }
+.btn-tint.stop svg { color: var(--accent-ink); animation: spin 2.4s linear infinite; }
+.btn-tint.stop::after {
+  content: ""; position: absolute; left: 0; bottom: 0; width: 35%; height: 3px; border-radius: 3px;
+  background: linear-gradient(90deg, transparent, var(--accent), var(--accent-2), transparent);
+  animation: indet 1.4s cubic-bezier(.45, 0, .55, 1) infinite;
+}
+@keyframes indet { from { transform: translateX(-100%); } to { transform: translateX(290%); } }
+
+.mt8 { margin-top: 8px; }
+.hint { margin: 7px 2px 0; font-size: 12px; color: var(--text-2); line-height: 1.35; }
+.hint:empty { display: none; }
+
+/* ---- настройки (список как в «Настройках» iOS) */
+.row { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
+.row + .row { border-top: 1px solid var(--separator); }
+.row:first-child { padding-top: 2px; }
+.row:last-child { padding-bottom: 2px; }
+.row .txt { flex: 1; min-width: 0; }
+.row .t { font-weight: 600; }
+.row .d { font-size: 12px; color: var(--text-2); }
+.switch {
+  position: relative; width: 50px; height: 30px; border-radius: 999px; flex: none;
+  background: var(--fill-hover); transition: background .3s ease;
+}
+.switch::after {
+  content: ""; position: absolute; top: 2px; left: 2px; width: 26px; height: 26px; border-radius: 999px;
+  background: var(--knob); box-shadow: 0 3px 8px rgba(0, 0, 0, .15), 0 1px 1px rgba(0, 0, 0, .12);
+  transition: transform .32s var(--spring), width .2s ease;
+}
+.switch:active::after { width: 31px; }
+.switch[aria-checked="true"] { background: var(--green); }
+.switch[aria-checked="true"]::after { transform: translateX(20px); }
+.switch[aria-checked="true"]:active::after { transform: translateX(15px); }
+
+/* ---- нижняя панель: одна стеклянная плашка, как таб-бар */
+.nav {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; margin-top: auto; flex: none;
+  background: var(--card); border: 1px solid var(--card-border); border-radius: var(--r-card);
+  box-shadow: var(--shadow); backdrop-filter: blur(24px) saturate(1.6);
+}
+.nav button {
+  height: 44px; border-radius: 18px; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 2px; font-size: 11.5px; font-weight: 600; color: var(--text-2);
+  transition: background .2s, color .2s, transform .15s;
+}
+.nav button:hover:not(:disabled) { color: var(--text); background: var(--fill); }
+.nav button:active:not(:disabled) { transform: scale(.95); }
+.nav svg { width: 18px; height: 18px; }
+
+/* ---- установка */
+.setup-hero { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 30px 8px 6px; flex: none; }
+.setup-hero .big-logo { width: 88px; height: 88px; filter: drop-shadow(0 16px 32px rgba(110, 91, 242, .45)); }
+.setup-hero .brand-sm { margin-top: 16px; font-size: 13px; font-weight: 600; color: var(--accent-ink); letter-spacing: .2px; }
+.setup-hero h1 { margin-top: 4px; font: 600 25px/1.18 var(--display); letter-spacing: -.6px; }
+.setup-hero p { margin-top: 8px; color: var(--text-2); font-size: 13.5px; max-width: 330px; }
+.steps { position: relative; display: flex; flex-direction: column; gap: 12px; }
+.steps::before { content: ""; position: absolute; left: 11.5px; top: 14px; bottom: 14px; width: 1px; background: var(--separator); }
+.step { position: relative; display: flex; gap: 12px; align-items: flex-start; }
+.step .num {
+  width: 24px; height: 24px; border-radius: 50%; flex: none; display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff;
+  font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums;
+}
+.step .t { font-weight: 600; }
+.step .d { font-size: 12px; color: var(--text-2); }
+.source {
+  margin-top: 12px; padding: 9px 12px; border-radius: var(--r-ctl); background: var(--fill);
+  font: 12px var(--mono); color: var(--text-2); text-align: center; word-break: break-all;
+}
+.progress { height: 6px; border-radius: 999px; background: var(--fill); overflow: hidden; margin-top: 10px; display: none; }
+.progress i {
+  display: block; height: 100%; width: 0; border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent)); background-size: 200% 100%;
+  transition: width .3s var(--ease); animation: sheen 1.6s linear infinite;
+}
+@keyframes sheen { to { background-position: -200% 0; } }
+.setup-status { min-height: 18px; font-size: 12.5px; text-align: center; color: var(--text-2); }
+.setup-status[data-tone="bad"] { color: var(--red-ink); }
+.setup-status[data-tone="ok"] { color: var(--green-ink); }
+.footnote { font-size: 11.5px; color: var(--text-3); text-align: center; line-height: 1.45; padding: 2px 10px 0; }
+
+/* ---- журнал */
+.log-card { flex: 1; min-height: 0; padding: 0; overflow: hidden; display: flex; }
+.log {
+  flex: 1; overflow-y: auto; padding: 12px 14px; font: 12px/1.6 var(--mono); user-select: text;
+  scrollbar-width: thin; scrollbar-color: var(--fill-hover) transparent;
+}
+.log:empty { display: grid; place-items: center; }
+.log:empty::before {
+  content: "Пока пусто\A Здесь появятся запуски, проверки и ошибки";
+  white-space: pre-line; text-align: center; font: 13px/1.5 var(--sans); color: var(--text-3);
+}
+.log .ln { display: grid; grid-template-columns: 60px 1fr; gap: 8px; }
+.log .tm { color: var(--text-3); font-variant-numeric: tabular-nums; }
+.log .engine { color: var(--text-2); }
+.log .ok { color: var(--green-ink); }
+.log .err { color: var(--red-ink); }
+.log .msg { word-break: break-word; }
+
+/* ---- безопасность */
+.facts { display: flex; flex-direction: column; }
+.fact { display: flex; gap: 12px; padding: 10px 0; }
+.fact + .fact { border-top: 1px solid var(--separator); }
+.fact:first-child { padding-top: 2px; }
+.fact:last-child { padding-bottom: 2px; }
+.fact .ic {
+  width: 28px; height: 28px; border-radius: 8px; flex: none; display: grid; place-items: center; margin-top: 1px;
+  background: linear-gradient(180deg, #40D86E, #26B04C); color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25);
+}
+.fact .ic svg { width: 16px; height: 16px; }
+.fact .t { font-weight: 600; }
+.fact .d { font-size: 12px; color: var(--text-2); }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 7px 14px; font-size: 12.5px; padding: 0 2px; }
+.kv .k { color: var(--text-2); }
+.kv .v { font-family: var(--mono); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hash { cursor: pointer; border-radius: 6px; transition: color .2s; }
+.hash:hover { color: var(--accent-ink); }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto; flex: none; }
+.grid2 .btn { height: 44px; font-size: 13px; }
+
+/* ---- выпадающий список: полупрозрачное «стекло», как меню macOS */
+.popover {
+  position: fixed; z-index: 20; max-height: 340px; overflow-y: auto; padding: 5px;
+  background: color-mix(in srgb, var(--card-solid) 86%, transparent);
+  backdrop-filter: blur(30px) saturate(1.8);
+  border: 1px solid var(--card-border); border-radius: 14px;
+  box-shadow: var(--shadow-lg); opacity: 0; transform: translateY(-6px) scale(.97);
+  transform-origin: top center; pointer-events: none;
+  transition: opacity .18s ease, transform .26s var(--ease);
+  scrollbar-width: thin; scrollbar-color: var(--fill-hover) transparent;
+}
+.popover.open { opacity: 1; transform: none; pointer-events: auto; }
+.popover button {
+  width: 100%; height: 34px; padding: 0 10px; border-radius: 9px; text-align: left;
+  display: flex; align-items: center; justify-content: space-between; font-size: 13.5px;
+  transition: background .12s;
+}
+.popover button:hover { background: var(--fill); }
+.popover button[aria-selected="true"] { font-weight: 600; color: var(--accent-ink); }
+.popover button svg { width: 14px; height: 14px; color: var(--accent-ink); }
+
+/* ---- шаги первого запуска подсвечиваются по ходу */
+.step { transition: opacity .3s; }
+.steps[data-step] .step { opacity: .45; }
+.steps[data-step="1"] .step[data-n="1"], .steps[data-step="2"] .step[data-n="2"],
+.steps[data-step="3"] .step[data-n="3"] { opacity: 1; }
+.steps[data-step="2"] .step[data-n="1"], .steps[data-step="3"] .step[data-n="1"],
+.steps[data-step="3"] .step[data-n="2"] { opacity: .8; }
+.setup-actions { display: flex; flex-direction: column; gap: 8px; }
+.setup-actions[hidden] { display: none; }
+.auto-note-setup { text-align: center; font-size: 12px; color: var(--text-3); }
+
+/* ---- карточка обновления: снизу, как лист в iOS */
+.upd {
+  position: fixed; inset: 0; z-index: 28; display: flex; align-items: flex-end; justify-content: center;
+  background: var(--scrim); backdrop-filter: blur(6px); padding: 12px;
+  opacity: 0; pointer-events: none; transition: opacity .22s ease;
+}
+.upd.open { opacity: 1; pointer-events: auto; }
+.upd-card {
+  width: 100%; max-height: calc(100% - 24px); overflow-y: auto; scrollbar-width: none;
+  border-radius: 26px; padding: 20px 18px 16px;
+  background: color-mix(in srgb, var(--card-solid) 94%, transparent); backdrop-filter: blur(30px) saturate(1.8);
+  box-shadow: var(--shadow-lg); transform: translateY(40px); transition: transform .42s var(--spring);
+}
+.upd.open .upd-card { transform: none; }
+.upd-badge {
+  width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: 0 8px 18px -6px rgba(110, 91, 242, .5);
+}
+.upd-badge svg { width: 22px; height: 22px; }
+.upd-head { display: flex; gap: 12px; align-items: center; }
+.upd-title { font: 600 18px/1.2 var(--display); letter-spacing: -.3px; }
+.upd-sub { font-size: 12.5px; color: var(--text-2); margin-top: 2px; }
+.upd-vers { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 16px 0 12px; }
+.ver {
+  padding: 6px 12px; border-radius: 999px; font: 600 13px var(--mono); background: var(--fill); color: var(--text-2);
+}
+.ver.new { background: color-mix(in srgb, var(--green) 18%, transparent); color: var(--green-ink); }
+.upd-vers svg { width: 16px; height: 16px; color: var(--text-3); }
+.upd-more {
+  width: 100%; height: 40px; padding: 0 12px; border-radius: 12px; background: var(--fill);
+  display: flex; align-items: center; justify-content: space-between; font-weight: 600; font-size: 13px;
+}
+.upd-more svg { width: 14px; height: 14px; color: var(--text-3); transition: transform .25s var(--ease); }
+.upd.expanded .upd-more svg { transform: rotate(180deg); }
+.upd-notes {
+  display: grid; grid-template-rows: 0fr; transition: grid-template-rows .32s var(--ease);
+}
+.upd.expanded .upd-notes { grid-template-rows: 1fr; }
+.upd-notes > div { overflow: hidden; }
+.upd-notes ol { list-style: none; counter-reset: n; padding: 10px 2px 2px; display: flex; flex-direction: column; gap: 8px; }
+.upd-notes li { counter-increment: n; display: grid; grid-template-columns: 22px 1fr; gap: 8px; font-size: 13px; line-height: 1.4; }
+.upd-notes li::before {
+  content: counter(n); width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 11px; font-weight: 700; background: var(--accent-soft); color: var(--accent-ink);
+}
+.upd-empty { font-size: 12.5px; color: var(--text-3); padding: 10px 4px 0; }
+.upd-acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
+.upd-acts .btn { height: 44px; border-radius: 999px; }
+.upd-skip { display: block; margin: 10px auto 0; font-size: 12.5px; color: var(--text-3); padding: 4px 8px; border-radius: 8px; }
+.upd-skip:hover { color: var(--text-2); }
+
+/* ---- о программе и удаление */
+.about { text-align: center; font-size: 12px; color: var(--text-3); margin-top: 4px; }
+.btn-danger { background: color-mix(in srgb, var(--red) 12%, transparent); color: var(--red); flex: none; }
+.btn-danger:hover:not(:disabled) { background: color-mix(in srgb, var(--red) 18%, transparent); }
+
+/* ---- диалог в стиле iOS и уведомление */
+.scrim {
+  position: fixed; inset: 0; z-index: 30; background: var(--scrim); backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center; padding: 28px;
+  opacity: 0; pointer-events: none; transition: opacity .22s ease;
+}
+.scrim.open { opacity: 1; pointer-events: auto; }
+.sheet {
+  width: 100%; max-width: 300px; padding: 22px 16px 16px; border-radius: 26px;
+  background: color-mix(in srgb, var(--card-solid) 92%, transparent); backdrop-filter: blur(30px) saturate(1.8);
+  box-shadow: var(--shadow-lg);
+  transform: scale(1.08); opacity: 0;
+  transition: transform .34s var(--spring), opacity .2s ease;
+}
+.scrim.open .sheet { transform: none; opacity: 1; }
+.sheet .ico {
+  width: 46px; height: 46px; border-radius: 14px; margin: 0 auto 12px; display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff;
+  box-shadow: 0 8px 18px -6px rgba(110, 91, 242, .5);
+}
+.sheet .ico svg { width: 22px; height: 22px; }
+.sheet p { white-space: pre-line; text-align: center; font-size: 14px; color: var(--text); line-height: 1.45; padding: 0 4px; }
+.sheet .acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 18px; }
+.sheet .acts.one { grid-template-columns: 1fr; }
+.sheet .acts .btn { height: 44px; border-radius: 999px; }
+.toast {
+  position: fixed; left: 50%; bottom: 22px; z-index: 40; transform: translate(-50%, 16px) scale(.96);
+  padding: 9px 16px; border-radius: 999px;
+  background: color-mix(in srgb, var(--card-solid) 90%, transparent); backdrop-filter: blur(24px) saturate(1.8);
+  box-shadow: var(--shadow-lg); font-size: 12.5px; font-weight: 600; opacity: 0; white-space: nowrap;
+  transition: opacity .2s ease, transform .34s var(--spring); pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+.offline {
+  position: fixed; inset: 0; z-index: 50; display: none; place-items: center; padding: 30px;
+  background: var(--bg); color: var(--text-2); text-align: center; font-size: 14px; line-height: 1.5;
+}
+.offline.show { display: grid; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .screen, .screen.back { transform: none; }
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9584FF"/><stop offset=".5" stop-color="#6C72F5"/><stop offset="1" stop-color="#3FA8F5"/>
+    </linearGradient>
+    <linearGradient id="lg-gloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".30"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <!-- Логотип: арка-проход со «светом» внутри и точкой — путь сквозь стену. Форма — сквиркл, как у иконок Apple -->
+    <symbol id="logo" viewBox="0 0 64 64">
+      <path d="M32 0C50 0 58 0 61 3s3 11 3 29 0 26-3 29-11 3-29 3-26 0-29-3-3-11-3-29 0-26 3-29S14 0 32 0Z" fill="url(#lg)"/>
+      <path d="M32 0C50 0 58 0 61 3s3 11 3 29 0 26-3 29-11 3-29 3-26 0-29-3-3-11-3-29 0-26 3-29S14 0 32 0Z" fill="url(#lg-gloss)"/>
+      <path d="M21 47V31a11 11 0 0 1 22 0v16Z" fill="#fff" opacity=".18"/>
+      <path d="M21 47V31a11 11 0 0 1 22 0v16" fill="none" stroke="#fff" stroke-width="6.5" stroke-linecap="round"/>
+      <circle cx="32" cy="40" r="4.3" fill="#fff"/>
+    </symbol>
+    <symbol id="i-power" viewBox="0 0 24 24"><path d="M12 3v8M6.3 6.6a8 8 0 1 0 11.4 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z" fill="currentColor"/></symbol>
+    <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 5 12 2.5-6h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 5 6v5.5c0 4.4 3 8.2 7 9.5 4-1.3 7-5.1 7-9.5V6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v5M12 8h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7.5A1.5 1.5 0 0 1 4.5 6H9l2 2h8.5A1.5 1.5 0 0 1 21 9.5v8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-yt" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="4.5" fill="#FF3B30"/><path d="M10 9v6l5-3z" fill="#fff"/></symbol>
+    <symbol id="i-dc" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="6.5" fill="#5865F2"/><path d="M8.2 8.6c1.2-.5 2.4-.7 3.8-.7s2.6.2 3.8.7c.9 1.4 1.4 3 1.3 4.9-1 .8-2 1.2-3 1.5l-.6-1c.4-.1.8-.3 1.1-.6-1.6.7-3.6.7-5.2 0 .3.3.7.5 1.1.6l-.6 1c-1-.3-2-.7-3-1.5-.1-1.9.4-3.5 1.3-4.9z" fill="#fff"/><circle cx="10" cy="11.8" r=".95" fill="#5865F2"/><circle cx="14" cy="11.8" r=".95" fill="#5865F2"/></symbol>
+  </defs>
+</svg>
+
+<div class="app">
+
+  <!-- ===== установка движка ===== -->
+  <section class="screen" id="s-setup">
+    <div class="setup-hero">
+      <svg class="big-logo"><use href="#logo"/></svg>
+      <div class="brand-sm">Prohod</div>
+      <h1>Свободный доступ<br>к YouTube и Discord</h1>
+      <p>Один раз установим движок zapret — официальную сборку Flowseal на основе bol-van/zapret.</p>
+    </div>
+    <div class="card">
+      <div class="steps" id="steps">
+        <div class="step" data-n="1"><div class="num">1</div><div><div class="t">Скачаю последний релиз</div><div class="d">Прямо с GitHub, без посредников</div></div></div>
+        <div class="step" data-n="2"><div class="num">2</div><div><div class="t">Сверю SHA-256</div><div class="d">Если не совпадёт хоть один байт — файл будет отброшен</div></div></div>
+        <div class="step" data-n="3"><div class="num">3</div><div><div class="t">Подберу стратегию</div><div class="d">Автоматически, под вашего провайдера</div></div></div>
+      </div>
+      <div class="source">github.com/Flowseal/zapret-discord-youtube</div>
+      <div class="progress" id="dl-progress"><i></i></div>
+    </div>
+    <div class="setup-status" id="setup-status"></div>
+    <div class="auto-note-setup" id="setup-auto">Ничего нажимать не нужно — всё произойдёт само</div>
+    <div class="setup-actions" id="setup-actions" hidden>
+      <button class="btn btn-primary" id="b-download"><svg><use href="#i-down"/></svg>Повторить</button>
+      <button class="btn btn-plain" id="b-folder"><svg><use href="#i-folder"/></svg>У меня уже есть папка zapret</button>
+    </div>
+    <div class="footnote">Антивирусы иногда ругаются на WinDivert — это драйвер перехвата пакетов, без него обход невозможен. Если файлы пропадут, добавьте папку engine в исключения.</div>
+  </section>
+
+  <!-- ===== главная ===== -->
+  <section class="screen" id="s-main">
+    <div class="top">
+      <svg class="logo"><use href="#logo"/></svg>
+      <div class="brand">Prohod</div>
+      <div class="spacer"></div>
+      <div class="chip" id="chip"><span class="dot"></span><span id="chip-text">Выключен</span></div>
+    </div>
+
+    <div class="hero">
+      <button class="power" id="power" data-state="off" aria-label="Включить или выключить обход">
+        <span class="glow"></span><span class="ring"></span>
+        <span class="face"><svg><use href="#i-power"/></svg></span>
+      </button>
+      <div class="status-title" id="title">Обход выключен</div>
+      <div class="status-sub" id="sub">Нажмите, чтобы включить</div>
+      <div class="pills">
+        <div class="pill" id="p-YouTube" data-tone="idle"><svg><use href="#i-yt"/></svg>YouTube<span class="dot"></span><span class="note"></span></div>
+        <div class="pill" id="p-Discord" data-tone="idle"><svg><use href="#i-dc"/></svg>Discord<span class="dot"></span><span class="note"></span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="eyebrow">Стратегия</span><span class="meta" id="engine"></span></div>
+      <button class="select" id="select" aria-haspopup="listbox" aria-expanded="false"><span id="strategy">—</span><svg><use href="#i-chev"/></svg></button>
+      <button class="btn btn-tint mt8" id="b-auto"><svg><use href="#i-spark"/></svg><span id="auto-label">Подобрать автоматически</span></button>
+      <div class="hint" id="auto-note"></div>
+    </div>
+
+    <div class="card">
+      <div class="row"><div class="txt"><div class="t">Игровой режим</div><div class="d">Обход и для игр, порты 1024–65535</div></div><button class="switch" role="switch" data-key="game" aria-checked="false" aria-label="Игровой режим"></button></div>
+      <div class="row"><div class="txt"><div class="t">Включать при открытии</div><div class="d">Сразу запускать последнюю стратегию</div></div><button class="switch" role="switch" data-key="open" aria-checked="false" aria-label="Включать при открытии"></button></div>
+      <div class="row"><div class="txt"><div class="t">Запуск вместе с Windows</div><div class="d">Стартовать при входе в систему</div></div><button class="switch" role="switch" data-key="autostart" aria-checked="false" aria-label="Запуск вместе с Windows"></button></div>
+    </div>
+
+    <nav class="nav">
+      <button id="b-check"><svg><use href="#i-pulse"/></svg>Проверить</button>
+      <button data-go="log"><svg><use href="#i-list"/></svg>Журнал</button>
+      <button data-go="security"><svg><use href="#i-shield"/></svg>Настройки</button>
+    </nav>
+  </section>
+
+  <!-- ===== журнал ===== -->
+  <section class="screen" id="s-log">
+    <div class="top">
+      <button class="back-btn" data-go="main" aria-label="Назад"><svg><use href="#i-back"/></svg></button>
+      <div class="page-title">Журнал</div>
+    </div>
+    <div class="card log-card"><div class="log" id="log"></div></div>
+    <button class="btn btn-plain" id="b-copy">Скопировать журнал</button>
+  </section>
+
+  <!-- ===== безопасность ===== -->
+  <section class="screen" id="s-security">
+    <div class="top">
+      <button class="back-btn" data-go="main" aria-label="Назад"><svg><use href="#i-back"/></svg></button>
+      <div class="page-title">Настройки</div>
+    </div>
+    <div class="card facts">
+      <div class="fact"><div class="ic"><svg><use href="#i-check"/></svg></div><div><div class="t">Трафик не уходит на чужие серверы</div><div class="d">Это не VPN и не прокси — пакеты меняются прямо на вашем компьютере</div></div></div>
+      <div class="fact"><div class="ic"><svg><use href="#i-check"/></svg></div><div><div class="t">В сеть — только к GitHub</div><div class="d">Проверка обновлений и скачивание движка. Телеметрии нет</div></div></div>
+      <div class="fact"><div class="ic"><svg><use href="#i-check"/></svg></div><div><div class="t">Подлинность проверяется</div><div class="d">SHA-256 при установке и перед каждым запуском движка</div></div></div>
+      <div class="fact"><div class="ic"><svg><use href="#i-check"/></svg></div><div><div class="t">Код открыт</div><div class="d">Исходный код лежит рядом с программой</div></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="eyebrow">Движок</span><span class="meta">нажмите на хэш, чтобы скопировать</span></div>
+      <div class="kv" id="sec-kv"></div>
+    </div>
+    <div class="grid2">
+      <button class="btn btn-plain" id="b-update">Проверить обновление</button>
+      <button class="btn btn-plain" id="b-folder2">Сменить папку</button>
+      <button class="btn btn-plain" id="b-open">Открыть папку</button>
+      <button class="btn btn-plain" id="b-repo">Адрес на GitHub</button>
+    </div>
+    <button class="btn btn-danger" id="b-uninstall">Удалить Prohod с компьютера</button>
+    <div class="about" id="about"></div>
+  </section>
+</div>
+
+<div class="popover" id="popover" role="listbox"></div>
+<div class="scrim" id="scrim"><div class="sheet" role="dialog" aria-modal="true">
+  <div class="ico"><svg><use href="#i-info"/></svg></div>
+  <p id="dlg-text"></p>
+  <div class="acts" id="dlg-acts"></div>
+</div></div>
+<div class="upd" id="upd" role="dialog" aria-modal="true" aria-labelledby="upd-title"><div class="upd-card">
+  <div class="upd-head">
+    <div class="upd-badge"><svg><use href="#i-down"/></svg></div>
+    <div><div class="upd-title" id="upd-title">Доступно обновление</div><div class="upd-sub">Движок zapret · проверено по SHA-256 перед установкой</div></div>
+  </div>
+  <div class="upd-vers"><span class="ver" id="upd-from"></span><svg viewBox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="ver new" id="upd-to"></span></div>
+  <button class="upd-more" id="upd-more" aria-expanded="false"><span id="upd-more-label">Что нового</span><svg><use href="#i-chev"/></svg></button>
+  <div class="upd-notes"><div><ol id="upd-list"></ol><div class="upd-empty" id="upd-empty" hidden>Список изменений не опубликован.</div></div></div>
+  <div class="upd-acts">
+    <button class="btn btn-plain" id="upd-later">Позже</button>
+    <button class="btn btn-primary" id="upd-apply">Обновить</button>
+  </div>
+  <button class="upd-skip" id="upd-skip">Пропустить эту версию</button>
+</div></div>
+<div class="toast" id="toast"></div>
+<div class="offline" id="offline"><div>Окно потеряло связь с программой.<br>Закройте его и запустите программу снова.</div></div>
+
+<script src="app.js"></script>
+</body>
+</html>

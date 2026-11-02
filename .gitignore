@@ -1,0 +1,9 @@
+# окружение и промежуточные файлы сборки
+source/.build-venv/
+source/packaging/work/
+source/packaging/dist/
+__pycache__/
+*.pyc
+
+# данные запуска из исходников (движок, настройки, журнал)
+source/data/
