@@ -45,8 +45,234 @@ from pathlib import Path
 
 APP_NAME = "Prohod"
 APP_TITLE = "Prohod"
-APP_VERSION = "1.2.1"
+APP_VERSION = "1.3.0"
 TASK_NAME = "Prohod"
+
+# ---------------------------------------------------------------- язык
+
+# Страны, где по умолчанию русский (регион из «Параметры → Время и язык → Регион», без интернета)
+RU_REGIONS = {"RU", "BY", "KZ", "KG", "TJ", "UZ", "AM", "AZ", "MD", "TM"}
+LANGS = ("auto", "ru", "en")
+LANG = "ru"  # текущий язык окна и сообщений: "ru" или "en"
+
+
+def system_lang():
+    """Язык по умолчанию: русский для СНГ или русской Windows, иначе английский."""
+    k32 = ctypes.windll.kernel32
+    buf = ctypes.create_unicode_buffer(16)
+    try:
+        if k32.GetUserDefaultGeoName(buf, 16) and buf.value.upper() in RU_REGIONS:
+            return "ru"
+    except AttributeError:  # Windows старше 10 1709
+        pass
+    return "ru" if k32.GetUserDefaultUILanguage() & 0x3FF == 0x19 else "en"  # LANG_RUSSIAN
+
+
+def apply_lang(choice):
+    global LANG
+    LANG = choice if choice in ("ru", "en") else system_lang()
+
+
+def T(text, *args):
+    """Перевод фразы: в коде — русский текст, английский берётся из EN."""
+    if LANG == "en":
+        text = EN.get(text, text)
+    return text.format(*args) if args else text
+
+
+EN = {
+    " (обход включён)": " (bypass on)",
+    " (обход выключен)": " (bypass off)",
+    " Часть сайтов всё ещё недоступна.": " Some sites are still unreachable.",
+    ". Запуск заблокирован. Скачайте движок заново или укажите папку повторно.":
+        ". Start blocked. Download the engine again or choose the folder again.",
+    "GitHub вернул странный номер версии": "GitHub returned an odd version number",
+    "GitHub не дал контрольную сумму файла — скачивание отменено":
+        "GitHub gave no checksum for the file — download cancelled",
+    "Prohod будет запускаться при входе в Windows с правами администратора, без запроса.\n\n":
+        "Prohod will start when you sign in to Windows, with administrator rights and no prompt.\n\n",
+    "Prohod работает в трее. Выйти — правой кнопкой по значку → «Выйти».":
+        "Prohod keeps running in the tray. To quit, right-click the icon → Quit.",
+    "Prohod удалён": "Prohod removed",
+    "Prohod удалён с компьютера.": "Prohod has been removed from this computer.",
+    "Prohod уже запущен — значок в трее рядом с часами.":
+        "Prohod is already running — look for its icon in the tray next to the clock.",
+    "SHA-256 не совпал с официальным. Файл подменён или повреждён — он отброшен.":
+        "SHA-256 doesn't match the official one. The file was tampered with or damaged — discarded.",
+    "SHA-256 совпал с официальным, движок установлен": "SHA-256 matches the official one, engine installed",
+    "winws.exe закрылся сразу (код {}). Подробности — в журнале.":
+        "winws.exe exited right away (code {}). See the log for details.",
+    "winws.exe неожиданно завершился (код {})": "winws.exe exited unexpectedly (code {})",
+    "{} {} запущен, права администратора: {}": "{} {} started, administrator rights: {}",
+    "{} из {}: «{}»": "{} of {}: “{}”",
+    "{} — ссылка, а не папка. Переустановите Prohod.": "{} is a link, not a folder. Reinstall Prohod.",
+    "{}: запуск обхода при входе в Windows": "{}: start the bypass when signing in to Windows",
+    "«{}»: движок упал во время проверки": "“{}”: the engine crashed during the test",
+    "«{}»: не запустилась — {}": "“{}”: failed to start — {}",
+    "Автоподбор: {} стратегий": "Auto-select: {} strategies",
+    "Архив больше заявленного — скачивание отменено": "The archive is larger than declared — download "
+                                                      "cancelled",
+    "Архив скачался не полностью": "The archive was not fully downloaded",
+    "Архив слишком большой после распаковки": "The archive is too large when unpacked",
+    "Без обхода всё открывается — проверка не отличит рабочую стратегию от нерабочей. "
+    "Подбор пропущен, выбор не изменён.":
+        "Everything opens without the bypass — the test can't tell a working strategy from a broken one. "
+        "Auto-select skipped, selection unchanged.",
+    "Без обхода доступно {} из {}": "Without the bypass: {} of {} reachable",
+    "Без прав администратора обход работать не может: winws.exe ставит драйвер WinDivert.":
+        "The bypass can't work without administrator rights: winws.exe installs the WinDivert driver.",
+    "В {} есть --{} (пишет файлы) — такой запуск запрещён": "{} contains --{} (writes files) — not allowed",
+    "В {} не найдена команда запуска winws.exe": "No winws.exe command found in {}",
+    "В {} недопустимое значение: {}": "Invalid value in {}: {}",
+    "В {} недопустимый путь: {}": "Invalid path in {}: {}",
+    "В {} путь за пределами папки движка: {}": "Path outside the engine folder in {}: {}",
+    "В архиве нет bin\\winws.exe. Скорее всего его удалил антивирус — добавьте папку {} "
+    "в исключения и повторите.":
+        "The archive has no bin\\winws.exe. Most likely your antivirus removed it — add the folder {} "
+        "to its exclusions and try again.",
+    "В релизе нет .zip архива": "The release has no .zip archive",
+    "Важно: Prohod или сам Python лежат там, куда может писать любая программа вашей учётной записи. "
+    "Вирус, попавший на компьютер, сможет подменить файлы и получить права администратора при следующем "
+    "входе. Надёжнее держать Prohod в C:\\Program Files и поставить Python «для всех пользователей».\n\n":
+        "Important: Prohod or Python itself is in a place any program of your account can write to. "
+        "Malware could replace the files and get administrator rights at your next sign-in. It's safer to "
+        "keep Prohod in C:\\Program Files and install Python “for all users”.\n\n",
+    "Версия {} пропущена по вашему выбору": "Version {} skipped as you chose",
+    "Версия {} пропущена — напомню о следующей": "Version {} skipped — I'll remind you about the next one",
+    "Включены TCP timestamps (netsh), как делает service.bat": "TCP timestamps enabled (netsh), as service.bat does",
+    "Включить автозапуск?": "Turn on autostart?",
+    "Включить обход": "Turn bypass on",
+    "Выбрана «{}» ({}/{})": "Selected “{}” ({}/{})",
+    "Выйти": "Quit",
+    "Выключаю обход и убираю следы в системе": "Turning the bypass off and cleaning up the system",
+    "Выключаю…": "Turning off…",
+    "Выключить обход": "Turn bypass off",
+    "Готово — подлинность подтверждена": "Done — authenticity confirmed",
+    "Движок обновлён: {} → {}, SHA-256 совпал": "Engine updated: {} → {}, SHA-256 matches",
+    "Движок остановился": "The engine stopped",
+    "Движок: {} (версия {}, стратегий: {})": "Engine: {} (version {}, strategies: {})",
+    "Доступно {} из {}": "{} of {} reachable",
+    "Доступно обновление движка: {} → {}": "Engine update available: {} → {}",
+    "Закрыт посторонний winws.exe: {}": "Closed a foreign winws.exe: {}",
+    "Запуск с Windows: {}": "Start with Windows: {}",
+    "Запуск стратегии «{}»": "Starting strategy “{}”",
+    "Запускаю…": "Starting…",
+    "Здесь нет bin\\winws.exe и general*.bat. Укажите распакованную папку zapret-discord-youtube.":
+        "There's no bin\\winws.exe and general*.bat here. Choose the unpacked zapret-discord-youtube folder.",
+    "Значок в трее не создан: {}": "Tray icon not created: {}",
+    "Игровой режим: {}": "Game mode: {}",
+    "Контрольные суммы движка записаны заново": "Engine checksums saved again",
+    "Контрольные суммы движка не найдены — нужно подтверждение": "Engine checksums not found — confirmation needed",
+    "Лучшая: «{}» — открывается {} из {}.": "Best: “{}” — {} of {} reachable.",
+    "Нажмите «Повторить».": "Press “Retry”.",
+    "Не найден Microsoft Edge — он нужен, чтобы показать окно.": "Microsoft Edge not found — it's needed to "
+                                                                 "show the window.",
+    "Не найдены сохранённые контрольные суммы движка (настройки сброшены или папка перенесена)."
+    "\n\n{}\n\nДоверять файлам в этой папке? Отвечайте «Да», только если вы сами ставили этот движок. "
+    "Иначе нажмите «Нет» и скачайте движок заново.":
+        "No saved engine checksums found (settings were reset or the folder was moved).\n\n{}\n\n"
+        "Trust the files in this folder? Answer “Yes” only if you installed this engine yourself. "
+        "Otherwise press “No” and download the engine again.",
+    "Не получилось изменить автозапуск. Подробности в журнале.": "Couldn't change autostart. See the log for details.",
+    "Не получилось изменить автозапуск: {}": "Couldn't change autostart: {}",
+    "Не получилось проверить обновления. Подробности в журнале.": "Couldn't check for updates. See the log for details.",
+    "Не удалось вернуть «{}»: {}": "Couldn't restore “{}”: {}",
+    "Не удалось запустить": "Couldn't start",
+    "Не удалось запустить: {}": "Couldn't start: {}",
+    "Не удалось открыть окно: {}\n\nУстановите «Microsoft Edge WebView2 Runtime» с сайта Microsoft "
+    "и запустите Prohod снова.":
+        "Couldn't open the window: {}\n\nInstall “Microsoft Edge WebView2 Runtime” from the Microsoft "
+        "website and start Prohod again.",
+    "Не удалось получить список изменений: {}": "Couldn't get the list of changes: {}",
+    "Недопустимое имя версии": "Invalid version name",
+    "Неизвестная переменная %{}% в {}": "Unknown variable %{}% in {}",
+    "Неожиданный размер архива": "Unexpected archive size",
+    "Нет файла ui/{}": "No file ui/{}",
+    "Ни одна стратегия не помогла. Выбор не изменён — попробуйте игровой режим или обновите движок.":
+        "No strategy helped. Selection unchanged — try game mode or update the engine.",
+    "Ни одна стратегия не улучшила доступ (без обхода {} из {})":
+        "No strategy improved access (without the bypass {} of {})",
+    "Нужны права администратора. Перезапустите Prohod.": "Administrator rights needed. Restart Prohod.",
+    "Обновлений нет: движок {} — последняя версия": "No updates: engine {} is the latest",
+    "Обновляю движок…": "Updating the engine…",
+    "Обход выключен": "Bypass is off",
+    "Обход работает": "Bypass is on",
+    "Обход работает: «{}»": "Bypass is on: “{}”",
+    "Окно WebView2 не открылось: {}": "WebView2 window didn't open: {}",
+    "Окно закроется само": "The window will close by itself",
+    "Окно открыло чужую страницу ({}) — вызов отклонён": "The window opened a foreign page ({}) — call "
+                                                         "rejected",
+    "Окно открыто напрямую, не через планировщик ({})": "Window opened directly, not via the scheduler ({})",
+    "Окно попыталось открыть чужую страницу — возвращаю": "The window tried to open a foreign page — going "
+                                                          "back",
+    "Окно устарело. Закройте его и запустите Prohod заново.": "This window is outdated. Close it and start "
+                                                              "Prohod again.",
+    "Опасный путь в архиве: {}": "Unsafe path in the archive: {}",
+    "Останавливаю после текущей стратегии…": "Stopping after the current strategy…",
+    "Откройте журнал. Частая причина — антивирус или другой обход.":
+        "Open the log. A common cause is antivirus or another bypass tool.",
+    "Открыть {}": "Open {}",
+    "Ошибка: {}": "Error: {}",
+    "Папка zapret-discord-youtube (где bin и general.bat)": "zapret-discord-youtube folder (with bin and "
+                                                            "general.bat)",
+    "Первый запуск: подбираю стратегию автоматически": "First run: selecting a strategy automatically",
+    "Подбираю стратегию…": "Finding a strategy…",
+    "Подбор отменён": "Auto-select cancelled",
+    "Подбор отменён, выбор не изменён.": "Auto-select cancelled, selection unchanged.",
+    "Подозрительные аргументы в {}: {}": "Suspicious arguments in {}: {}",
+    "Приложение закрывается": "The app is closing",
+    "Проверка доступа": "Access check",
+    "Проверка обновлений не удалась: {}": "Update check failed: {}",
+    "Проверьте интернет и нажмите «Повторить».": "Check your internet connection and press “Retry”.",
+    "Проверяю «{}» — {} из {}": "Testing “{}” — {} of {}",
+    "Проверяю доступ без обхода": "Checking access without the bypass",
+    "Работает служба «zapret» (установлена через service.bat). Она уже делает обход и будет мешать."
+    "\n\nОстановить её сейчас? Удалить насовсем можно в service.bat.":
+        "The “zapret” service is running (installed via service.bat). It already does a bypass and will "
+        "interfere.\n\nStop it now? You can remove it for good in service.bat.",
+    "Релиз {}: {}, SHA-256 {}": "Release {}: {}, SHA-256 {}",
+    "Сайты открываются и без обхода — подбирать не из чего.": "Sites open without the bypass — nothing to "
+                                                              "choose from.",
+    "Сверяю SHA-256 и запоминаю файлы…": "Checking SHA-256 and remembering the files…",
+    "Скачиваю {} — {}%": "Downloading {} — {}%",
+    "Служба zapret остановлена": "zapret service stopped",
+    "Сначала выключите обход.": "Turn the bypass off first.",
+    "Спрашиваю у GitHub последний релиз…": "Asking GitHub for the latest release…",
+    "Ссылка ведёт не на официальный репозиторий: {}": "The link doesn't point to the official repository: {}",
+    "Стратегия {} изменена после установки или добавлена позже": "Strategy {} was changed after install or added later",
+    "Стратегия «{}»": "Strategy “{}”",
+    "Стратегия «{}» · движок {}": "Strategy “{}” · engine {}",
+    "Стратегия «{}» не найдена": "Strategy “{}” not found",
+    "У вас последняя версия движка — {}.": "You have the latest engine version — {}.",
+    "Удалено: ": "Removed: ",
+    "Удаляю Prohod…": "Removing Prohod…",
+    "Уже запущен другой winws.exe (наверное, zapret открыт вручную через .bat). Два одновременно "
+    "не работают.\n\nЗакрыть его?":
+        "Another winws.exe is already running (probably zapret started by hand via .bat). Two can't work "
+        "at once.\n\nClose it?",
+    "Файлы движка изменились после установки: ": "Engine files changed after install: ",
+    "Эту папку Prohod не скачивал и не может проверить её подлинность. Используйте только zapret со "
+    "страницы github.com/Flowseal.\n\nЗапомнить текущие файлы? Если потом их кто-то изменит, Prohod "
+    "откажется запускать движок.":
+        "Prohod didn't download this folder and can't verify it. Use only zapret from "
+        "github.com/Flowseal.\n\nRemember the current files? If someone changes them later, Prohod "
+        "will refuse to start the engine.",
+    "автозапуск": "autostart",
+    "драйвер {}": "driver {}",
+    "запись в «Приложениях»": "the Apps entry",
+    "системных следов не было": "there were no system traces",
+    "ярлык {}": "shortcut {}",
+    # ниже — фразы, которые собираются не одним вызовом
+    "да": "yes", "нет": "no", "вкл": "on", "выкл": "off",
+    "Нажмите, чтобы включить": "Click to turn on",
+    "обход работает": "bypass on", "запуск…": "starting…", "ошибка": "error", "обход выключен": "bypass off",
+    "Удалить Prohod с компьютера полностью?\n\nБудут выключены обход и автозапуск, удалены драйвер WinDivert, "
+    "движок zapret, настройки, ярлыки, запись в «Приложениях» и сама программа.\n\nОтменить это нельзя.":
+        "Remove Prohod from this computer completely?\n\nThe bypass and autostart will be turned off, and the "
+        "WinDivert driver, the zapret engine, settings, shortcuts, the Apps entry and the program itself "
+        "will be deleted.\n\nThis can't be undone.",
+    "стратегия": "strategy", "стратегии": "strategies", "стратегий": "strategies",
+}
 
 
 def _known_folder(csidl):
@@ -212,6 +438,8 @@ def sha256_file(path):
 
 
 def plural(n, one, few, many):
+    if LANG == "en":
+        return one if n == 1 else many
     if n % 10 == 1 and n % 100 != 11:
         return one
     return few if 2 <= n % 10 <= 4 and not 12 <= n % 100 <= 14 else many
@@ -224,8 +452,9 @@ def natural_key(s):
 # ---------------------------------------------------------------- настройки
 
 DEFAULTS = {"engine_dir": "", "strategy": "", "game_filter": False, "start_on_open": False,
-            "skip_version": "",
+            "skip_version": "", "lang": "auto", "theme": "auto",
             "engine_hashes": {}}
+THEMES = ("auto", "light", "dark")
 
 
 def load_settings():
@@ -314,7 +543,7 @@ class Engine:
         result = []
         for f in self.root.glob("general*.bat"):
             m = re.search(r"\((.+)\)", f.stem)
-            result.append((m.group(1) if m else "Стандартная", f))
+            result.append((m.group(1) if m else "general", f))
         result.sort(key=lambda x: (x[1].stem.lower() != "general", natural_key(x[0])))
         return result
 
@@ -339,7 +568,7 @@ class Engine:
         m = re.search(r'^\s*start\s+"[^"]*"\s+(?:/min\s+)?"%BIN%winws\.exe"\s+(.+)$',
                       text, re.IGNORECASE | re.MULTILINE)
         if not m:
-            raise EngineError(f"В {Path(bat).name} не найдена команда запуска winws.exe")
+            raise EngineError(T("В {} не найдена команда запуска winws.exe", Path(bat).name))
 
         port = GAME_RANGE if game_filter else GAME_OFF
         values = {
@@ -353,7 +582,7 @@ class Engine:
         def sub(mm):
             key = mm.group(1).lower()
             if key not in values:
-                raise EngineError(f"Неизвестная переменная %{mm.group(1)}% в {Path(bat).name}")
+                raise EngineError(T("Неизвестная переменная %{}% в {}", mm.group(1), Path(bat).name))
             return values[key]
 
         line = m.group(1).replace("%~dp0", str(self.root) + "\\")
@@ -362,21 +591,21 @@ class Engine:
         name = Path(bat).name
         bad = [a for a in args if not a.startswith("--")]
         if not args or bad:
-            raise EngineError(f"Подозрительные аргументы в {name}: {' '.join(bad[:3])}")
+            raise EngineError(T("Подозрительные аргументы в {}: {}", name, ' '.join(bad[:3])))
         root = self.root.resolve()
         for a in args:
             opt, _, value = a[2:].partition("=")
             if forbidden_option(opt.lower()):
-                raise EngineError(f"В {name} есть --{opt} (пишет файлы) — такой запуск запрещён")
+                raise EngineError(T("В {} есть --{} (пишет файлы) — такой запуск запрещён", name, opt))
             if value.startswith("@") or ".." in value or "cygdrive" in value.lower():
-                raise EngineError(f"В {name} недопустимое значение: {a}")
+                raise EngineError(T("В {} недопустимое значение: {}", name, a))
             if re.match(r"[A-Za-z]:", value):
                 # только полный путь вида C:\... и только внутри папки движка
                 p = Path(value).resolve()
                 if not re.match(r"[A-Za-z]:\\", value) or (p != root and root not in p.parents):
-                    raise EngineError(f"В {name} путь за пределами папки движка: {value}")
+                    raise EngineError(T("В {} путь за пределами папки движка: {}", name, value))
             elif "\\" in value or "/" in value:
-                raise EngineError(f"В {name} недопустимый путь: {value}")
+                raise EngineError(T("В {} недопустимый путь: {}", name, value))
         return [str(self.exe), *args]
 
     def _binaries(self):
@@ -398,7 +627,7 @@ class Engine:
         проверкой и разбором нельзя."""
         data = Path(bat).read_bytes()
         if manifest.get(str(Path(bat).relative_to(self.root))) != hashlib.sha256(data).hexdigest():
-            raise TamperError(f"Стратегия {Path(bat).name} изменена после установки или добавлена позже")
+            raise TamperError(T("Стратегия {} изменена после установки или добавлена позже", Path(bat).name))
         return data.decode("utf-8", errors="replace")
 
 
@@ -464,7 +693,7 @@ class Bypass:
         self.stop()
         with self.lock:
             if self.closed:
-                raise EngineError("Приложение закрывается")
+                raise EngineError(T("Приложение закрывается"))
             p = subprocess.Popen(
                 cmd, cwd=cwd, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT, creationflags=NO_WINDOW)
@@ -548,19 +777,19 @@ def latest_release():
     rel = fetch_json(RELEASE_API)
     tag = str(rel.get("tag_name", ""))
     if not re.fullmatch(r"[0-9A-Za-z][0-9A-Za-z._-]{0,39}", tag) or ".." in tag:
-        raise EngineError("GitHub вернул странный номер версии")
+        raise EngineError(T("GitHub вернул странный номер версии"))
     asset = next((a for a in rel.get("assets", []) if str(a.get("name", "")).lower().endswith(".zip")), None)
     if not asset:
-        raise EngineError("В релизе нет .zip архива")
+        raise EngineError(T("В релизе нет .zip архива"))
     url = str(asset.get("browser_download_url", ""))
     if not url.startswith(DOWNLOAD_PREFIX):
-        raise EngineError(f"Ссылка ведёт не на официальный репозиторий: {url}")
+        raise EngineError(T("Ссылка ведёт не на официальный репозиторий: {}", url))
     digest = str(asset.get("digest") or "")
     if not re.fullmatch(r"sha256:[0-9a-f]{64}", digest):
-        raise EngineError("GitHub не дал контрольную сумму файла — скачивание отменено")
+        raise EngineError(T("GitHub не дал контрольную сумму файла — скачивание отменено"))
     size = int(asset.get("size", 0))
     if not 0 < size <= MAX_DOWNLOAD:
-        raise EngineError("Неожиданный размер архива")
+        raise EngineError(T("Неожиданный размер архива"))
     return {"tag": tag, "url": url, "sha256": digest[7:], "size": size, "name": asset["name"]}
 
 
@@ -612,14 +841,14 @@ def download_verified(rel, progress):
             if not chunk:
                 break
             if len(buf) + len(chunk) > rel["size"]:
-                raise EngineError("Архив больше заявленного — скачивание отменено")
+                raise EngineError(T("Архив больше заявленного — скачивание отменено"))
             h.update(chunk)
             buf += chunk
             progress(len(buf) / rel["size"])
     if len(buf) != rel["size"]:
-        raise EngineError("Архив скачался не полностью")
+        raise EngineError(T("Архив скачался не полностью"))
     if h.hexdigest() != rel["sha256"]:
-        raise EngineError("SHA-256 не совпал с официальным. Файл подменён или повреждён — он отброшен.")
+        raise EngineError(T("SHA-256 не совпал с официальным. Файл подменён или повреждён — он отброшен."))
     return bytes(buf)
 
 
@@ -630,7 +859,7 @@ def safe_extract(data, dest):
         for info in zf.infolist():
             target = (dest / info.filename).resolve()
             if target != dest and dest not in target.parents:
-                raise EngineError(f"Опасный путь в архиве: {info.filename}")
+                raise EngineError(T("Опасный путь в архиве: {}", info.filename))
             if info.is_dir():
                 target.mkdir(parents=True, exist_ok=True)
                 continue
@@ -639,7 +868,7 @@ def safe_extract(data, dest):
                 while chunk := src.read(1 << 20):
                     written += len(chunk)  # считаем реальные байты, а не заявленные в заголовке
                     if written > MAX_UNPACKED:
-                        raise EngineError("Архив слишком большой после распаковки")
+                        raise EngineError(T("Архив слишком большой после распаковки"))
                     out.write(chunk)
 
 
@@ -652,7 +881,7 @@ def install_release(rel, progress):
     final = ENGINE_DIR / rel["tag"]
     partial = ENGINE_DIR / (rel["tag"] + ".partial")
     if not (_inside_engine_dir(final) and _inside_engine_dir(partial)):
-        raise EngineError("Недопустимое имя версии")
+        raise EngineError(T("Недопустимое имя версии"))
     data = download_verified(rel, progress)
     try:
         if partial.exists():
@@ -660,8 +889,8 @@ def install_release(rel, progress):
         safe_extract(data, partial)
         e = Engine.find(partial)
         if not e:
-            raise EngineError("В архиве нет bin\\winws.exe. Скорее всего его удалил антивирус — "
-                              f"добавьте папку {ENGINE_DIR} в исключения и повторите.")
+            raise EngineError(T("В архиве нет bin\\winws.exe. Скорее всего его удалил антивирус — добавьте "
+                                "папку {} в исключения и повторите.", ENGINE_DIR))
         sub = e.root.relative_to(partial)
         old = ENGINE_DIR / (rel["tag"] + ".old")
         if old.exists():
@@ -706,7 +935,7 @@ def set_autostart(on):
                PROHOD_ARGS=subprocess.list2cmdline(self_args("--autostart")),
                PROHOD_DIR=str(APP_DIR),
                PROHOD_TASK=TASK_NAME,
-               PROHOD_DESC=f"{APP_NAME}: запуск обхода при входе в Windows")
+               PROHOD_DESC=T("{}: запуск обхода при входе в Windows", APP_NAME))
     script = """
 $ErrorActionPreference = 'Stop'
 $u = [Security.Principal.WindowsIdentity]::GetCurrent().Name
@@ -742,7 +971,7 @@ def edge_command(url, profile_dir):
     и выключенными фоновыми сервисами браузера."""
     edge = find_edge()
     if not edge:
-        raise EngineError("Не найден Microsoft Edge — он нужен, чтобы показать окно.")
+        raise EngineError(T("Не найден Microsoft Edge — он нужен, чтобы показать окно."))
     return [
         str(edge), f"--app={url}", f"--user-data-dir={profile_dir}",
         "--window-size=420,800", "--no-first-run", "--no-default-browser-check",
@@ -800,7 +1029,7 @@ def secure_data_dir():
     """Папка данных. У собранной программы она внутри Program Files и наследует его права
     (менять могут только администраторы); ссылку вместо папки не принимаем."""
     if is_link(DATA_DIR):
-        raise EngineError(f"{DATA_DIR} — ссылка, а не папка. Переустановите Prohod.")
+        raise EngineError(T("{} — ссылка, а не папка. Переустановите Prohod.", DATA_DIR))
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 
@@ -851,7 +1080,7 @@ def remove_system_traces():
     done = []
     if autostart_enabled():
         set_autostart(False)
-        done.append("автозапуск")
+        done.append(T("автозапуск"))
     for name in ("WinDivert", "WinDivert14"):
         if not driver_is_ours(name):
             continue
@@ -862,16 +1091,16 @@ def remove_system_traces():
                 break
             time.sleep(0.3)
         if run_quiet(["sc", "delete", name])[0] == 0:
-            done.append(f"драйвер {name}")
+            done.append(T("драйвер {}", name))
     for lnk in shortcut_paths():
         try:
             lnk.unlink()
-            done.append(f"ярлык {lnk.parent.name}")
+            done.append(T("ярлык {}", lnk.parent.name))
         except OSError:
             pass
     try:
         winreg.DeleteKey(winreg.HKEY_LOCAL_MACHINE, UNINSTALL_KEY)
-        done.append("запись в «Приложениях»")
+        done.append(T("запись в «Приложениях»"))
     except OSError:
         pass
     return done
@@ -901,7 +1130,7 @@ UNINSTALL_QUESTION = ("Удалить Prohod с компьютера полно�
 
 def uninstall_from_windows():
     """Удаление из «Параметры → Приложения» (Prohod.exe --uninstall): без окна программы."""
-    if not native_confirm(UNINSTALL_QUESTION):
+    if not native_confirm(T(UNINSTALL_QUESTION)):
         return
     if FROZEN:  # закрыть открытый Prohod (ровно этот exe) — его winws.exe закроется вместе с ним
         for pid in own_processes(sys.executable):
@@ -910,7 +1139,7 @@ def uninstall_from_windows():
         time.sleep(1)
     remove_system_traces()
     schedule_removal()
-    message("Prohod удалён с компьютера.")
+    message(T("Prohod удалён с компьютера."))
 
 
 def native_confirm(text):
@@ -973,6 +1202,7 @@ class Controller:
         self.running_name = None  # стратегия, с которой сейчас работает наш winws
         self.stop_flag = threading.Event()
         self.dialogs = []
+        self.on_theme = None         # окно перекрашивает свой заголовок под тему
         self.on_quit = None          # окно задаёт, как себя закрыть (нужно для удаления программы)
         self.uninstalling = False
         self._pending_release = None
@@ -981,17 +1211,19 @@ class Controller:
         self._trust_pending = False
         self.log_lines = deque(maxlen=400)
         self.bypass = Bypass(lambda line: self.log(line, "engine"))
+        apply_lang(self.settings["lang"])
         self.state = {
-            "screen": "setup", "power": "off", "title": IDLE_TITLE, "sub": IDLE_SUB,
+            "screen": "setup", "power": "off", "title": T(IDLE_TITLE), "sub": T(IDLE_SUB),
             "strategy": "", "strategies": [], "engine": "", "busy": False, "auto": False,
-            "auto_note": "Переберу стратегии и оставлю рабочую для YouTube и Discord.",
+            "auto_note": "",
             "pills": {svc: {"tone": "idle", "note": ""} for svc in TARGETS},
             "toggles": {"game": self.settings["game_filter"], "open": self.settings["start_on_open"],
                         "autostart": False},
             "setup": {"text": "", "tone": "muted"}, "dialog": None, "admin": is_admin(),
-            "update": None, "app_version": APP_VERSION,
+            "update": None, "app_version": APP_VERSION, "on_since": None, "auto_progress": None,
+            "lang": LANG, "prefs": {"lang": self.settings["lang"], "theme": self.settings["theme"]},
         }
-        self.log(f"{APP_NAME} {APP_VERSION} запущен, права администратора: {'да' if is_admin() else 'нет'}")
+        self.log(T("{} {} запущен, права администратора: {}", APP_NAME, APP_VERSION, T('да') if is_admin() else T('нет')))
         self._load_engine()
         threading.Thread(target=lambda: self.set(toggles=dict(self.state["toggles"],
                                                               autostart=autostart_enabled())),
@@ -1022,13 +1254,17 @@ class Controller:
             self.changed.notify_all()
 
     def _status(self, power, title, sub):
-        self.set(power=power, title=title, sub=sub)
+        # с какого момента обход работает без перерыва — окно показывает «работает 12 мин»
+        since = None
+        if power == "on":
+            since = self.state["on_since"] if self.state["power"] == "on" else time.time()
+        self.set(power=power, title=title, sub=sub, on_since=since)
 
     def _refresh_status(self):
         if self.bypass.running and self.running_name:
-            self._status("on", "Обход работает", f"Стратегия «{self.running_name}»")
+            self._status("on", T("Обход работает"), T("Стратегия «{}»", self.running_name))
         else:
-            self._status("off", IDLE_TITLE, IDLE_SUB)
+            self._status("off", T(IDLE_TITLE), T(IDLE_SUB))
 
     def _reset_pills(self):
         self.set(pills={svc: {"tone": "idle", "note": ""} for svc in TARGETS})
@@ -1045,10 +1281,10 @@ class Controller:
                 code = self.bypass.take_exit_code()
                 if code is not None:
                     self.running_name = None
-                    self.log(f"winws.exe неожиданно завершился (код {code})", "err")
+                    self.log(T("winws.exe неожиданно завершился (код {})", code), "err")
                     self._reset_pills()
-                    self._status("error", "Движок остановился",
-                                 "Откройте журнал. Частая причина — антивирус или другой обход.")
+                    self._status("error", T("Движок остановился"),
+                                 T("Откройте журнал. Частая причина — антивирус или другой обход."))
 
     def run_bg(self, fn, *args, notify=False):
         """Тяжёлая работа в фоне, по одной задаче за раз. Если fn вернёт функцию,
@@ -1063,7 +1299,7 @@ class Controller:
             try:
                 then = fn(*args)
             except Exception as e:
-                self.log(f"Ошибка: {e}", "err")
+                self.log(T("Ошибка: {}", e), "err")
                 self._refresh_status()
                 if notify:
                     self.alert(str(e))
@@ -1126,17 +1362,17 @@ class Controller:
         if e:
             # Контрольных сумм нет (настройки сброшены или папка сменилась). Молча доверять
             # файлам нельзя — иначе подмену можно «узаконить», просто удалив settings.json.
-            self.log("Контрольные суммы движка не найдены — нужно подтверждение", "err")
+            self.log(T("Контрольные суммы движка не найдены — нужно подтверждение"), "err")
             self._trust_pending = True
             threading.Thread(target=self._ask_trust, args=(e,), daemon=True).start()
 
     def _ask_trust(self, e):
-        if native_confirm("Не найдены сохранённые контрольные суммы движка (настройки сброшены или "
-                          f"папка перенесена).\n\n{e.root}\n\nДоверять файлам в этой папке? Отвечайте «Да», "
-                          "только если вы сами ставили этот движок. Иначе нажмите «Нет» и скачайте "
-                          "движок заново."):
+        if native_confirm(T("Не найдены сохранённые контрольные суммы движка (настройки сброшены или папка "
+                            "перенесена).\n\n{}\n\nДоверять файлам в этой папке? Отвечайте «Да», только "
+                            "если вы сами ставили этот движок. Иначе нажмите «Нет» и скачайте движок "
+                            "заново.", e.root)):
             self._set_engine(e, e.manifest())
-            self.log("Контрольные суммы движка записаны заново", "ok")
+            self.log(T("Контрольные суммы движка записаны заново"), "ok")
 
     def _set_engine(self, e, manifest=None):
         with self.lock:
@@ -1151,9 +1387,12 @@ class Controller:
             if self.settings["strategy"] not in names:
                 self.settings["strategy"] = names[0]
             save_settings(self.settings)
-        self.set(screen="main", strategies=names, strategy=self.settings["strategy"],
-                 engine=f"zapret {e.version()} · {len(names)} {plural(len(names), 'стратегия', 'стратегии', 'стратегий')}")
-        self.log(f"Движок: {e.root} (версия {e.version()}, стратегий: {len(names)})")
+        self.set(screen="main", strategies=names, strategy=self.settings["strategy"], engine=self._engine_label())
+        self.log(T("Движок: {} (версия {}, стратегий: {})", e.root, e.version(), len(names)))
+
+    def _engine_label(self):
+        n = len(self.engine.strategies())
+        return f"zapret {self.engine.version()} · {n} {T(plural(n, 'стратегия', 'стратегии', 'стратегий'))}"
 
     def security_info(self):
         if not self.engine:
@@ -1174,30 +1413,30 @@ class Controller:
     def _need_admin(self):
         if is_admin():
             return False
-        self.alert("Нужны права администратора. Перезапустите Prohod.")
+        self.alert(T("Нужны права администратора. Перезапустите Prohod."))
         return True
 
     def _resolve_conflicts(self):
         """True — можно запускать."""
         if service_running("zapret"):
-            if not self.ask("Работает служба «zapret» (установлена через service.bat). "
-                            "Она уже делает обход и будет мешать.\n\n"
-                            "Остановить её сейчас? Удалить насовсем можно в service.bat."):
+            if not self.ask(T("Работает служба «zapret» (установлена через service.bat). Она уже делает "
+                              "обход и будет мешать.\n\nОстановить её сейчас? Удалить насовсем можно в "
+                              "service.bat.")):
                 return False
             run_quiet(["sc", "stop", "zapret"])
             time.sleep(1.5)
-            self.log("Служба zapret остановлена")
+            self.log(T("Служба zapret остановлена"))
         p = self.bypass.proc
         ours = p.pid if p else None
         others = [pid for pid in winws_pids() if pid != ours]
         if others:
-            if not self.ask("Уже запущен другой winws.exe (наверное, zapret открыт вручную "
-                            "через .bat). Два одновременно не работают.\n\nЗакрыть его?"):
+            if not self.ask(T("Уже запущен другой winws.exe (наверное, zapret открыт вручную через .bat). "
+                              "Два одновременно не работают.\n\nЗакрыть его?")):
                 return False
             for pid in others:
                 run_quiet(["taskkill", "/PID", str(pid), "/F"])
             time.sleep(1)
-            self.log(f"Закрыт посторонний winws.exe: {others}")
+            self.log(T("Закрыт посторонний winws.exe: {}", others))
         if not self.bypass.running:
             stop_stale_drivers()
         return True
@@ -1205,28 +1444,28 @@ class Controller:
     def _check_binaries(self):
         changed = self.engine.verify_binaries(self.settings["engine_hashes"])
         if changed:
-            raise TamperError("Файлы движка изменились после установки: " + ", ".join(changed[:4])
-                              + ". Запуск заблокирован. Скачайте движок заново или укажите папку повторно.")
+            raise TamperError(T("Файлы движка изменились после установки: ") + ", ".join(changed[:4])
+                              + T(". Запуск заблокирован. Скачайте движок заново или укажите папку повторно."))
 
     def _launch(self, name):
         """Запускает стратегию и ждёт, не упадёт ли движок сразу."""
         bat = self._strategy_path(name)
         if not bat:
-            raise EngineError(f"Стратегия «{name}» не найдена")
+            raise EngineError(T("Стратегия «{}» не найдена", name))
         self._check_binaries()
         text = self.engine.read_verified_bat(self.settings["engine_hashes"], bat)
         self.engine.ensure_user_lists()
         cmd = self.engine.command(bat, self.settings["game_filter"], text)
         if not self._tcp_done:
             if enable_tcp_timestamps()[0] == 0:
-                self.log("Включены TCP timestamps (netsh), как делает service.bat")
+                self.log(T("Включены TCP timestamps (netsh), как делает service.bat"))
             self._tcp_done = True
         self.bypass.start(cmd, str(self.engine.bin))
         for _ in range(15):
             time.sleep(0.1)
             code = self.bypass.take_exit_code()
             if code is not None:
-                raise EngineError(f"winws.exe закрылся сразу (код {code}). Подробности — в журнале.")
+                raise EngineError(T("winws.exe закрылся сразу (код {}). Подробности — в журнале.", code))
         self.running_name = name
 
     # ---- команды из окна
@@ -1245,9 +1484,9 @@ class Controller:
         name = self.settings["strategy"]
 
         def job():
-            self._status("starting", "Запускаю…", f"Стратегия «{name}»")
+            self._status("starting", T("Запускаю…"), T("Стратегия «{}»", name))
             self._reset_pills()
-            self.log(f"Запуск стратегии «{name}»")
+            self.log(T("Запуск стратегии «{}»", name))
             try:
                 if not self._resolve_conflicts():
                     self._refresh_status()
@@ -1256,20 +1495,21 @@ class Controller:
             except Exception as e:
                 self.bypass.stop()  # иначе прежний winws работал бы, а экран показывал «ошибку»
                 self.running_name = None
-                self.log(f"Не удалось запустить: {e}", "err")
-                self._status("error", "Не удалось запустить", str(e))
+                self.log(T("Не удалось запустить: {}", e), "err")
+                self._status("error", T("Не удалось запустить"), str(e))
                 return
-            self.log(f"Обход работает: «{name}»", "ok")
-            self._status("on", "Обход работает", f"Стратегия «{name}»")
+            self.log(T("Обход работает: «{}»", name), "ok")
+            self._status("on", T("Обход работает"), T("Стратегия «{}»", name))
+            return self.check  # сразу показать, открываются ли YouTube и Discord
 
         self.run_bg(job)
 
     def stop_bypass(self):
         def job():
-            self._status("starting", "Выключаю…", "")
+            self._status("starting", T("Выключаю…"), "")
             self.bypass.stop()
             self.running_name = None
-            self.log("Обход выключен")
+            self.log(T("Обход выключен"))
             self._reset_pills()
             self._refresh_status()
 
@@ -1294,32 +1534,52 @@ class Controller:
             self.settings["game_filter"] = value
             save_settings(self.settings)
             self.set(toggles=dict(self.state["toggles"], game=value))
-            self.log(f"Игровой режим: {'вкл' if value else 'выкл'}")
+            self.log(T("Игровой режим: {}", T('вкл') if value else T('выкл')))
             if self.bypass.running:
                 self.start_bypass()
         elif key == "autostart":
             self.toggle_autostart(value)
+
+    def pref(self, key, value):
+        """Язык и тема окна."""
+        allowed = {"lang": LANGS, "theme": THEMES}.get(key, ())
+        if value not in allowed:
+            return
+        self.settings[key] = value
+        save_settings(self.settings)
+        prefs = dict(self.state["prefs"], **{key: value})
+        if key == "theme":
+            if self.on_theme:
+                self.on_theme()
+            return self.set(prefs=prefs)
+        apply_lang(value)
+        self.set(prefs=prefs, lang=LANG)
+        if not self.is_busy:  # перевести то, что уже на экране
+            self._refresh_status()
+            self.set(auto_note="")
+        if self.engine:
+            self.set(engine=self._engine_label())
 
     def toggle_autostart(self, v):
         protected = in_program_files(APP_DIR) and in_program_files(gui_python())
 
         def job():
             if v and not native_confirm(
-                    "Prohod будет запускаться при входе в Windows с правами администратора, без запроса.\n\n"
+                    T("Prohod будет запускаться при входе в Windows с правами администратора, без запроса.\n\n")
                     + ("" if protected else
-                       "Важно: Prohod или сам Python лежат там, куда может писать любая программа вашей "
-                       "учётной записи. Вирус, попавший на компьютер, сможет подменить файлы и получить "
-                       "права администратора при следующем входе. Надёжнее держать Prohod в "
-                       "C:\\Program Files и поставить Python «для всех пользователей».\n\n")
-                    + "Включить автозапуск?"):
+                       T("Важно: Prohod или сам Python лежат там, куда может писать любая программа вашей "
+                         "учётной записи. Вирус, попавший на компьютер, сможет подменить файлы и получить "
+                         "права администратора при следующем входе. Надёжнее держать Prohod в C:\\Program "
+                         "Files и поставить Python «для всех пользователей».\n\n"))
+                    + T("Включить автозапуск?")):
                 return
             ok, out = set_autostart(v)
             if not ok:
-                self.log(f"Не получилось изменить автозапуск: {out.strip()}", "err")
-                self.alert("Не получилось изменить автозапуск. Подробности в журнале.")
+                self.log(T("Не получилось изменить автозапуск: {}", out.strip()), "err")
+                self.alert(T("Не получилось изменить автозапуск. Подробности в журнале."))
                 return
             self.set(toggles=dict(self.state["toggles"], autostart=v))
-            self.log(f"Запуск с Windows: {'вкл' if v else 'выкл'}", "ok")
+            self.log(T("Запуск с Windows: {}", T('вкл') if v else T('выкл')), "ok")
 
         self.run_bg(job)
 
@@ -1335,19 +1595,19 @@ class Controller:
 
     def check(self):
         def job():
-            self.log("Проверка доступа" + (" (обход включён)" if self.bypass.running else " (обход выключен)"))
+            self.log(T("Проверка доступа") + (T(" (обход включён)") if self.bypass.running else T(" (обход выключен)")))
             self.set(pills={svc: {"tone": "wait", "note": "…"} for svc in TARGETS})
             res = check_targets()
             total = sum(len(items) for items in res.values())
             self._show_results(res)
-            self.log(f"Доступно {score(res)} из {total}", "ok" if score(res) == total else "err")
+            self.log(T("Доступно {} из {}", score(res), total), "ok" if score(res) == total else "err")
 
         self.run_bg(job)
 
     def auto(self):
         if self._auto_running:
             self.stop_flag.set()
-            self.set(auto_note="Останавливаю после текущей стратегии…")
+            self.set(auto_note=T("Останавливаю после текущей стратегии…"))
             return
         if not self.engine or self.is_busy or self._need_admin():
             return
@@ -1355,13 +1615,14 @@ class Controller:
         prev = self.running_name if self.bypass.running else None
         self.stop_flag.clear()
         self._auto_running = True
-        self.log(f"Автоподбор: {len(names)} стратегий")
+        self.log(T("Автоподбор: {} стратегий", len(names)))
 
         def job():
             try:
                 self._auto_job(names, prev)
             finally:
                 self._auto_running = False
+                self.set(auto_progress=None)
 
         if not self.run_bg(job):
             self._auto_running = False
@@ -1374,19 +1635,19 @@ class Controller:
             self._check_binaries()
         except TamperError as e:
             self.log(str(e), "err")
-            self._status("error", "Подбор отменён", str(e))
+            self._status("error", T("Подбор отменён"), str(e))
             return
         self.bypass.stop()
         self.running_name = None
         self._reset_pills()
-        self._status("starting", "Подбираю стратегию…", "Проверяю доступ без обхода")
+        self._status("starting", T("Подбираю стратегию…"), T("Проверяю доступ без обхода"))
         base = check_targets()
         base_ok, total = score(base), sum(len(items) for items in base.values())
-        self.log(f"Без обхода доступно {base_ok} из {total}")
+        self.log(T("Без обхода доступно {} из {}", base_ok, total))
         if base_ok == total:
-            self.log("Без обхода всё открывается — проверка не отличит рабочую стратегию "
-                     "от нерабочей. Подбор пропущен, выбор не изменён.", "err")
-            self.set(auto_note="Сайты открываются и без обхода — подбирать не из чего.")
+            self.log(T("Без обхода всё открывается — проверка не отличит рабочую стратегию от нерабочей. "
+                       "Подбор пропущен, выбор не изменён."), "err")
+            self.set(auto_note=T("Сайты открываются и без обхода — подбирать не из чего."))
             self._restore(prev)
             return
 
@@ -1394,12 +1655,13 @@ class Controller:
         for i, name in enumerate(names, 1):
             if self.stop_flag.is_set():
                 break
-            self._status("starting", "Подбираю стратегию…", f"{i} из {len(names)}: «{name}»")
-            self.set(auto_note=f"Проверяю «{name}» — {i} из {len(names)}")
+            self._status("starting", T("Подбираю стратегию…"), T("{} из {}: «{}»", i, len(names), name))
+            self.set(auto_progress=[i - 1, len(names)])  # кольцо вокруг кнопки
+            self.set(auto_note=T("Проверяю «{}» — {} из {}", name, i, len(names)))
             try:
                 self._launch(name)
             except Exception as e:
-                self.log(f"«{name}»: не запустилась — {e}", "err")
+                self.log(T("«{}»: не запустилась — {}", name, e), "err")
                 continue
             time.sleep(1.5)
             res = check_targets()
@@ -1407,7 +1669,7 @@ class Controller:
             self.bypass.stop()
             self.running_name = None
             if not alive:
-                self.log(f"«{name}»: движок упал во время проверки", "err")
+                self.log(T("«{}»: движок упал во время проверки", name), "err")
                 continue
             s = score(res)
             self.log(f"«{name}»: {s}/{total}", "ok" if s == total else "info")
@@ -1417,25 +1679,25 @@ class Controller:
                 break
 
         if self.stop_flag.is_set():
-            self.log("Подбор отменён")
-            self.set(auto_note="Подбор отменён, выбор не изменён.")
+            self.log(T("Подбор отменён"))
+            self.set(auto_note=T("Подбор отменён, выбор не изменён."))
             self._restore(prev)
             return
         if best is None:
-            self.log(f"Ни одна стратегия не улучшила доступ (без обхода {base_ok} из {total})", "err")
-            self.set(auto_note="Ни одна стратегия не помогла. Выбор не изменён — попробуйте "
-                               "игровой режим или обновите движок.")
+            self.log(T("Ни одна стратегия не улучшила доступ (без обхода {} из {})", base_ok, total), "err")
+            self.set(auto_note=T("Ни одна стратегия не помогла. Выбор не изменён — попробуйте игровой режим "
+                                 "или обновите движок."))
             self._restore(prev)
             return
         self.settings["strategy"] = best
         save_settings(self.settings)
-        self.set(strategy=best, auto_note=f"Лучшая: «{best}» — открывается {best_score} из {total}."
-                 + ("" if best_score == total else " Часть сайтов всё ещё недоступна."))
+        self.set(strategy=best, auto_note=T("Лучшая: «{}» — открывается {} из {}.", best, best_score, total)
+                 + ("" if best_score == total else T(" Часть сайтов всё ещё недоступна.")))
         self._show_results(best_res)
-        self.log(f"Выбрана «{best}» ({best_score}/{total})", "ok")
+        self.log(T("Выбрана «{}» ({}/{})", best, best_score, total), "ok")
         self._launch(best)
-        self.log(f"Обход работает: «{best}»", "ok")
-        self._status("on", "Обход работает", f"Стратегия «{best}»")
+        self.log(T("Обход работает: «{}»", best), "ok")
+        self._status("on", T("Обход работает"), T("Стратегия «{}»", best))
 
     def _restore(self, prev):
         """После отмены или неудачи подбора возвращает то, что было до него."""
@@ -1443,7 +1705,7 @@ class Controller:
             try:
                 self._launch(prev)
             except Exception as e:
-                self.log(f"Не удалось вернуть «{prev}»: {e}", "err")
+                self.log(T("Не удалось вернуть «{}»: {}", prev, e), "err")
         self._refresh_status()
 
     def download(self, auto=None):
@@ -1452,30 +1714,30 @@ class Controller:
         if auto is None:
             auto = self.engine is None
         if self.bypass.running:
-            self.alert("Сначала выключите обход.")
+            self.alert(T("Сначала выключите обход."))
             return
 
         def job():
-            self.set(setup={"text": "Спрашиваю у GitHub последний релиз…", "tone": "muted", "step": 1})
+            self.set(setup={"text": T("Спрашиваю у GitHub последний релиз…"), "tone": "muted", "step": 1})
             try:
                 rel = latest_release()
-                self.log(f"Релиз {rel['tag']}: {rel['name']}, SHA-256 {rel['sha256']}")
+                self.log(T("Релиз {}: {}, SHA-256 {}", rel['tag'], rel['name'], rel['sha256']))
                 e = install_release(rel, lambda p: self.set(
-                    setup={"text": f"Скачиваю {rel['name']} — {int(p * 100)}%", "tone": "muted",
+                    setup={"text": T("Скачиваю {} — {}%", rel['name'], int(p * 100)), "tone": "muted",
                            "progress": p, "step": 1}))
-                self.set(setup={"text": "Сверяю SHA-256 и запоминаю файлы…", "tone": "muted", "step": 2})
+                self.set(setup={"text": T("Сверяю SHA-256 и запоминаю файлы…"), "tone": "muted", "step": 2})
                 manifest = e.manifest()
             except Exception as ex:
                 net = isinstance(ex, OSError) and not isinstance(ex, EngineError)
-                self.set(setup={"text": f"{ex}\n" + ("Проверьте интернет и нажмите «Повторить»."
-                                                     if net else "Нажмите «Повторить»."),
+                self.set(setup={"text": f"{ex}\n" + (T("Проверьте интернет и нажмите «Повторить».")
+                                                     if net else T("Нажмите «Повторить».")),
                                 "tone": "bad", "retry": True})
                 raise
-            self.log("SHA-256 совпал с официальным, движок установлен", "ok")
-            self.set(setup={"text": "Готово — подлинность подтверждена", "tone": "ok", "step": 3})
+            self.log(T("SHA-256 совпал с официальным, движок установлен"), "ok")
+            self.set(setup={"text": T("Готово — подлинность подтверждена"), "tone": "ok", "step": 3})
             self._set_engine(e, manifest)
             if auto and not self.closing:
-                self.log("Первый запуск: подбираю стратегию автоматически")
+                self.log(T("Первый запуск: подбираю стратегию автоматически"))
                 return self.auto
             return None
 
@@ -1500,29 +1762,29 @@ class Controller:
             try:
                 rel = latest_release()
             except Exception as e:
-                self.log(f"Проверка обновлений не удалась: {e}", "err")
+                self.log(T("Проверка обновлений не удалась: {}", e), "err")
                 if manual:
-                    self.alert("Не получилось проверить обновления. Подробности в журнале.")
+                    self.alert(T("Не получилось проверить обновления. Подробности в журнале."))
                 return
             if not newer_version(rel["tag"], cur):
-                self.log(f"Обновлений нет: движок {cur} — последняя версия")
+                self.log(T("Обновлений нет: движок {} — последняя версия", cur))
                 if manual:
-                    self.alert(f"У вас последняя версия движка — {cur}.")
+                    self.alert(T("У вас последняя версия движка — {}.", cur))
                 return
             if not manual and self.settings["skip_version"] == rel["tag"]:
-                self.log(f"Версия {rel['tag']} пропущена по вашему выбору")
+                self.log(T("Версия {} пропущена по вашему выбору", rel['tag']))
                 return
             try:
                 notes = release_notes(cur)
             except Exception as e:
                 notes = []
-                self.log(f"Не удалось получить список изменений: {e}", "err")
+                self.log(T("Не удалось получить список изменений: {}", e), "err")
             cur = self.engine.version() if self.engine else ""  # пока качали описание, могли обновиться
             if not newer_version(rel["tag"], cur):
                 return
             self._pending_release = rel
             self.set(update={"current": cur or "—", "latest": rel["tag"], "notes": notes})
-            self.log(f"Доступно обновление движка: {cur} → {rel['tag']}", "ok")
+            self.log(T("Доступно обновление движка: {} → {}", cur, rel['tag']), "ok")
 
         threading.Thread(target=job, daemon=True).start()
 
@@ -1534,7 +1796,7 @@ class Controller:
         if rel:
             self.settings["skip_version"] = rel["tag"]
             save_settings(self.settings)
-            self.log(f"Версия {rel['tag']} пропущена — напомню о следующей")
+            self.log(T("Версия {} пропущена — напомню о следующей", rel['tag']))
         self.set(update=None)
 
     def update_apply(self):
@@ -1544,9 +1806,9 @@ class Controller:
         cur = self.engine.version() if self.engine else "—"
 
         def job():
-            self._status("starting", "Обновляю движок…", f"{cur} → {rel['tag']}")
+            self._status("starting", T("Обновляю движок…"), f"{cur} → {rel['tag']}")
             # Новая версия скачивается и проверяется в свою папку, пока старая работает
-            e = install_release(rel, lambda p: self.set(sub=f"Скачиваю {rel['tag']} — {int(p * 100)}%"))
+            e = install_release(rel, lambda p: self.set(sub=T("Скачиваю {} — {}%", rel['tag'], int(p * 100))))
             manifest = e.manifest()
             was_on = self.bypass.running
             self.bypass.stop()
@@ -1554,7 +1816,7 @@ class Controller:
             old_root = self.engine.root if self.engine else None
             self._set_engine(e, manifest)
             self._pending_release = None
-            self.log(f"Движок обновлён: {cur} → {rel['tag']}, SHA-256 совпал", "ok")
+            self.log(T("Движок обновлён: {} → {}, SHA-256 совпал", cur, rel['tag']), "ok")
             # убрать прежнюю версию — только если это папка версии, которую ставил сам Prohod
             if old_root:
                 top = ENGINE_DIR / old_root.relative_to(ENGINE_DIR).parts[0] if ENGINE_DIR in old_root.parents else None
@@ -1562,7 +1824,7 @@ class Controller:
                     shutil.rmtree(top, ignore_errors=True)
             if was_on:
                 self._launch(self.settings["strategy"])
-                self._status("on", "Обход работает", f"Стратегия «{self.settings['strategy']}» · движок {rel['tag']}")
+                self._status("on", T("Обход работает"), T("Стратегия «{}» · движок {}", self.settings['strategy'], rel['tag']))
             else:
                 self._refresh_status()
 
@@ -1572,17 +1834,17 @@ class Controller:
     def uninstall(self):
         """Удалить Prohod полностью: обход, автозапуск, драйвер, движок, настройки, ярлыки, программу."""
         def job():
-            if not native_confirm(UNINSTALL_QUESTION):
+            if not native_confirm(T(UNINSTALL_QUESTION)):
                 return
             self.uninstalling = True  # с этого момента закрытие окна не оборвёт удаление
             try:
-                self._status("starting", "Удаляю Prohod…", "Выключаю обход и убираю следы в системе")
+                self._status("starting", T("Удаляю Prohod…"), T("Выключаю обход и убираю следы в системе"))
                 self.stop_flag.set()
                 self.bypass.close()
                 self.running_name = None
                 done = remove_system_traces()
-                self.log("Удалено: " + (", ".join(done) or "системных следов не было"), "ok")
-                self._status("off", "Prohod удалён", "Окно закроется само")
+                self.log(T("Удалено: ") + (", ".join(done) or T("системных следов не было")), "ok")
+                self._status("off", T("Prohod удалён"), T("Окно закроется само"))
             finally:
                 self._uninstall_done.set()
             time.sleep(1.2)
@@ -1593,22 +1855,22 @@ class Controller:
 
     def folder(self):
         if self.bypass.running:
-            self.alert("Сначала выключите обход.")
+            self.alert(T("Сначала выключите обход."))
             return
 
         def job():
-            d = pick_folder("Папка zapret-discord-youtube (где bin и general.bat)")
+            d = pick_folder(T("Папка zapret-discord-youtube (где bin и general.bat)"))
             if not d:
                 return
             e = Engine.find(d)
             if not e:
-                self.alert("Здесь нет bin\\winws.exe и general*.bat. "
-                           "Укажите распакованную папку zapret-discord-youtube.")
+                self.alert(T("Здесь нет bin\\winws.exe и general*.bat. Укажите распакованную папку "
+                             "zapret-discord-youtube."))
                 return
-            if not native_confirm("Эту папку Prohod не скачивал и не может проверить её подлинность. "
-                                  "Используйте только zapret со страницы github.com/Flowseal.\n\n"
-                                  "Запомнить текущие файлы? Если потом их кто-то изменит, "
-                                  "Prohod откажется запускать движок."):
+            if not native_confirm(T("Эту папку Prohod не скачивал и не может проверить её подлинность. "
+                                    "Используйте только zapret со страницы "
+                                    "github.com/Flowseal.\n\nЗапомнить текущие файлы? Если потом их кто-то "
+                                    "изменит, Prohod откажется запускать движок.")):
                 return
             self._set_engine(e, e.manifest())
 
@@ -1714,7 +1976,7 @@ class UiHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def _deny(self, code=403):
-        self._send(code, "Окно устарело. Закройте его и запустите Prohod заново.".encode(),
+        self._send(code, T("Окно устарело. Закройте его и запустите Prohod заново.").encode(),
                    "text/plain; charset=utf-8")
 
     def do_GET(self):
@@ -1730,7 +1992,7 @@ class UiHandler(BaseHTTPRequestHandler):
             try:
                 return self._send(200, (UI_DIR / name).read_bytes(), ctype)
             except OSError:
-                return self._send(500, f"Нет файла ui/{name}".encode(), "text/plain; charset=utf-8")
+                return self._send(500, T("Нет файла ui/{}", name).encode(), "text/plain; charset=utf-8")
         if path == "/api/events":
             return self._events()
         if path == "/api/ping":
@@ -1772,6 +2034,8 @@ class UiHandler(BaseHTTPRequestHandler):
             ctl.pick(str(body.get("name", "")))
         elif action == "toggle":
             ctl.toggle(str(body.get("key", "")), body.get("value") is True)
+        elif action == "pref":
+            ctl.pref(str(body.get("key", "")), str(body.get("value", "")))
         elif action == "answer":
             ctl.answer(str(body.get("id", "")), body.get("yes") is True)
         else:
@@ -1831,7 +2095,7 @@ class Bridge:
         if self._home is None:
             return False
         if url != self._home:
-            self._ctl.log(f"Окно открыло чужую страницу ({url[:80]}) — вызов отклонён", "err")
+            self._ctl.log(T("Окно открыло чужую страницу ({}) — вызов отклонён", url[:80]), "err")
             return False
         return True
 
@@ -1848,6 +2112,10 @@ class Bridge:
     def toggle(self, key, value):
         if self._ok():
             self._ctl.toggle(str(key), value is True)
+
+    def pref(self, key, value):
+        if self._ok():
+            self._ctl.pref(str(key), str(value))
 
     def answer(self, did, yes):
         if self._ok():
@@ -1883,10 +2151,24 @@ def push_state(ctl, window):
         time.sleep(0.08)
 
 
-def dark_title_bar(window):
+def theme_is_dark(theme):
+    """Тёмная ли тема окна: выбранная вручную или как у приложений Windows («Авто»)."""
+    if theme in ("light", "dark"):
+        return theme == "dark"
+    import winreg
+    try:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER,
+                            r"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize") as k:
+            return winreg.QueryValueEx(k, "AppsUseLightTheme")[0] == 0
+    except OSError:
+        return False
+
+
+def paint_title_bar(window, theme):
+    """Заголовок окна Windows в цвет темы (DWMWA_USE_IMMERSIVE_DARK_MODE)."""
     try:
         hwnd = window.native.Handle.ToInt64()
-        val = ctypes.c_int(1)
+        val = ctypes.c_int(1 if theme_is_dark(theme) else 0)
         ctypes.windll.dwmapi.DwmSetWindowAttribute(ctypes.c_void_p(hwnd), 20, ctypes.byref(val), ctypes.sizeof(val))
     except Exception:
         pass
@@ -1953,16 +2235,17 @@ class Tray:
         icon.Text = APP_TITLE
 
         menu = ContextMenuStrip()
-        open_item = ToolStripMenuItem(f"Открыть {APP_TITLE}")
+        open_item = ToolStripMenuItem(T("Открыть {}", APP_TITLE))
         open_item.Font = Font(open_item.Font, FontStyle.Bold)
-        power_item = ToolStripMenuItem("Включить обход")
-        exit_item = ToolStripMenuItem("Выйти")
+        power_item = ToolStripMenuItem(T("Включить обход"))
+        exit_item = ToolStripMenuItem(T("Выйти"))
         open_item.Click += lambda sender, args: self.show()
         power_item.Click += lambda sender, args: self.ctl.power()
         exit_item.Click += lambda sender, args: self.quit()
 
         def on_opening(sender, args):
-            power_item.Text = "Выключить обход" if self.ctl.bypass.running else "Включить обход"
+            open_item.Text, exit_item.Text = T("Открыть {}", APP_TITLE), T("Выйти")  # язык мог смениться
+            power_item.Text = T("Выключить обход") if self.ctl.bypass.running else T("Включить обход")
             power_item.Enabled = self.ctl.engine is not None and not self.ctl.is_busy
 
         menu.Opening += on_opening
@@ -1986,11 +2269,11 @@ class Tray:
                 icon.Visible = False
                 Application.ExitThread()
                 return
-            icon.Text = f"{APP_TITLE} — {TRAY_STATUS.get(self.ctl.state['power'], '')}"[:63]
+            icon.Text = f"{APP_TITLE} — {T(TRAY_STATUS.get(self.ctl.state['power'], ''))}"[:63]
             if self._want_hint:
                 self._want_hint, self._hint_shown = False, True
-                icon.ShowBalloonTip(4000, APP_TITLE, "Prohod работает в трее. Выйти — правой кнопкой "
-                                                     "по значку → «Выйти».", ToolTipIcon.Info)
+                icon.ShowBalloonTip(4000, APP_TITLE, T("Prohod работает в трее. Выйти — правой кнопкой по "
+                                                       "значку → «Выйти»."), ToolTipIcon.Info)
 
         timer = Timer()
         timer.Interval = 700
@@ -2034,7 +2317,7 @@ def run_native(ctl, webview, hidden=False):
     bridge = Bridge(ctl)
     window = webview.create_window(
         APP_TITLE, url=str(UI_DIR / "index.html"), js_api=bridge, width=420, height=800,
-        min_size=(380, 640), background_color="#0B0B0F", text_select=False, http_port=port,
+        min_size=(380, 640), background_color="#000000" if theme_is_dark(ctl.settings["theme"]) else "#F2F2F7", text_select=False, http_port=port,
         hidden=hidden)
     bridge._window = window
     quitting = threading.Event()
@@ -2042,13 +2325,14 @@ def run_native(ctl, webview, hidden=False):
     def show():
         window.show()
         window.restore()
-        dark_title_bar(window)
+        paint_title_bar(window, ctl.settings["theme"])
 
     def quit_app():
         quitting.set()
         window.destroy()
 
     tray = Tray(ctl, show, quit_app)
+    ctl.on_theme = lambda: paint_title_bar(window, ctl.settings["theme"])
     ctl.on_quit = quit_app
 
     def on_closing():
@@ -2059,14 +2343,14 @@ def run_native(ctl, webview, hidden=False):
         return False
 
     window.events.closing += on_closing
-    window.events.shown += lambda: dark_title_bar(window)
+    window.events.shown += lambda: paint_title_bar(window, ctl.settings["theme"])
 
     def on_loaded():
         url = (window.get_current_url() or "").split("#")[0]
         if bridge._home is None and url.endswith("/index.html"):
             bridge._home = url  # первая загрузка — наша страница
         elif bridge._home and url != bridge._home:
-            ctl.log("Окно попыталось открыть чужую страницу — возвращаю", "err")
+            ctl.log(T("Окно попыталось открыть чужую страницу — возвращаю"), "err")
             window.load_url(bridge._home)
 
     window.events.loaded += on_loaded
@@ -2075,7 +2359,7 @@ def run_native(ctl, webview, hidden=False):
     try:
         tray.start()
     except Exception as e:
-        ctl.log(f"Значок в трее не создан: {e}", "err")
+        ctl.log(T("Значок в трее не создан: {}", e), "err")
     try:
         # WebView2 запускает свой браузерный процесс БЕЗ прав администратора, поэтому писать в
         # Program Files он не может. Приватный режим: служебные файлы окна — во временной папке
@@ -2092,7 +2376,7 @@ def run_browser(ctl):
     ctl.on_quit = lambda: setattr(ctl, "closing", True)
     how = open_window(srv.entry_url, DATA_DIR / "window")
     if how != "limited":
-        ctl.log(f"Окно открыто напрямую, не через планировщик ({how})", "err")
+        ctl.log(T("Окно открыто напрямую, не через планировщик ({})", how), "err")
     # Окно закрыли — соединение пропало дольше чем на 6 секунд (на F5 хватает с запасом).
     started = time.time()
     while not ctl.closing:
@@ -2104,6 +2388,7 @@ def run_browser(ctl):
 
 def main():
     sanitize_environment()
+    apply_lang(load_settings()["lang"])  # системные окна до запуска — уже на нужном языке
     try:
         ctypes.windll.shcore.SetProcessDpiAwareness(2)
     except Exception:
@@ -2115,7 +2400,7 @@ def main():
     if not is_admin():
         if relaunch_as_admin():
             return
-        return fatal("Без прав администратора обход работать не может: winws.exe ставит драйвер WinDivert.")
+        return fatal(T("Без прав администратора обход работать не может: winws.exe ставит драйвер WinDivert."))
 
     if "--uninstall" in sys.argv:
         return uninstall_from_windows()
@@ -2125,7 +2410,7 @@ def main():
     k32.CreateMutexW(None, False, "Local\\ProhodApp")  # хэндл живёт до конца процесса
     if ctypes.get_last_error() == 183:  # ERROR_ALREADY_EXISTS: Prohod уже работает (может, в трее)
         if not ask_running_copy_to_show():
-            message("Prohod уже запущен — значок в трее рядом с часами.")
+            message(T("Prohod уже запущен — значок в трее рядом с часами."))
         return
 
     try:
@@ -2146,11 +2431,11 @@ def main():
             try:
                 run_native(ctl, webview, hidden=autostart)  # автозапуск — сразу в трей
             except Exception as e:  # нет WebView2 Runtime — пробуем окно Edge
-                ctl.log(f"Окно WebView2 не открылось: {e}", "err")
+                ctl.log(T("Окно WebView2 не открылось: {}", e), "err")
                 run_browser(ctl)
     except Exception as e:
-        fatal(f"Не удалось открыть окно: {e}\n\nУстановите «Microsoft Edge WebView2 Runtime» "
-              "с сайта Microsoft и запустите Prohod снова.")
+        fatal(T("Не удалось открыть окно: {}\n\nУстановите «Microsoft Edge WebView2 Runtime» с сайта "
+                "Microsoft и запустите Prohod снова.", e))
     finally:
         if ctl.uninstalling:
             ctl._uninstall_done.wait(30)  # окно закрыли посреди удаления — доделать
