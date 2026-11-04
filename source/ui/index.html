@@ -4,614 +4,1657 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'">
-<title>Prohod</title>
+<title>NIXYZ</title>
 <style>
-/* цвет сияния за кнопкой плавно перетекает между состояниями */
+/* Стиль «Звёздный росчерк», десктоп 16:9: слева стеклянная боковая панель, справа сцена.
+   Знак владельца — белая искра с росчерком; главная кнопка — тот же знак в круглом окне ночного неба.
+   Цвет состояния: работает — холодное звёздное сияние, частично — янтарь, ошибка — коралл. */
 @property --hc { syntax: "<color>"; inherits: true; initial-value: rgba(0, 0, 0, 0); }
 
+/* светлая тема «Рассвет»: лавандовая дымка и розовый край неба */
 :root {
-  --bg: #F2F2F7; --card: #FFFFFF; --fill: rgba(118, 118, 128, .12); --fill-2: rgba(118, 118, 128, .2);
-  --text: #1D1D1F; --text-2: #6E6E73; --text-3: #AEAEB2; --sep: rgba(60, 60, 67, .13);
-  --blue: #0071E3; --green: #34C759; --orange: #FF9500; --red: #FF3B30;
-  --purple: #AF52DE; --indigo: #5856D6; --teal: #30B0C7; --gray: #8E8E93;
-  --shadow: 0 1px 2px rgba(0, 0, 0, .04), 0 8px 24px -12px rgba(0, 0, 0, .12);
-  --scrim: rgba(0, 0, 0, .28); --glass: rgba(255, 255, 255, .8);
-  --btn-top: #FFFFFF; --btn-bot: #EFEFF4; --btn-edge: rgba(255, 255, 255, .9); --btn-shadow: rgba(0, 0, 0, .3); --btn-icon: #8E8E93;
-  --on-top: #4CD964; --on-bot: #28B04A; --halo-off: rgba(142, 142, 147, .14);
-  --ease: cubic-bezier(.32, .72, 0, 1);
-  --spring: cubic-bezier(.34, 1.56, .64, 1);
+  --bg: #ECEAF5; --glow-a: #FFFFFF; --glow-b: #F7E2EA; --card: #FBFBFE; --card-2: #FFFFFF;
+  --line: rgba(30, 32, 90, .09); --fill: rgba(40, 44, 120, .055); --fill-2: rgba(40, 44, 120, .1); --seg-bg: rgba(40, 44, 120, .075); --seg-on: #FFFFFF;
+  --text: #14162C; --text-2: #585D7C; --text-3: #9094AE;
+  --accent: #4B5FD6; --accent-ink: #3B4CC0; --on-accent: #FFFFFF;          /* кнопки и текст-действия */
+  --light: #D6E4FF;                                                          /* звёздное сияние «работает» */
+  --ok: #1E9A84; --ok-ink: #13806D; --warn: #E0961F; --warn-ink: #8A5300; --bad: #E0533F; --bad-ink: #BA3A27; --geo: #6A59B8;
+  --dot-off: #8E93B0; --portal: rgba(40, 44, 120, .1); --cta: #4B5FD6; --rim: rgba(255, 255, 255, .9);
+  --shade: rgba(10, 12, 50, .2); --drop: rgba(20, 24, 80, .35); --halo-off: rgba(60, 70, 160, .07);
+  --elev: 0 1px 2px rgba(20, 24, 80, .04), 0 12px 30px -20px rgba(20, 24, 80, .22);
+  --scrim: rgba(15, 16, 40, .32); --glass: rgba(251, 251, 254, .9); --pane: rgba(255, 255, 255, .66);
+  --star: transparent; --comet: rgba(90, 96, 190, .4); --comet-o: 0;
+  /* звёзды дневного неба: лавандовое ядро с белым ореолом — видны на пастели, при включении загораются */
+  --star-lit: #9C92F0; --star-glow: rgba(255, 255, 255, .95); --star-dim: 0; --star-k: .95; --star-scale: 1.5;
+  --day: block;                                             /* слой «Акварельный космос» */
+  /* стеклянные орбиты вокруг кнопки и тонкая звёздная пыль */
+  --wave: rgba(255, 255, 255, .92);
+  --wave-shadow: 0 0 0 1px rgba(110, 100, 200, .08), inset 0 0 22px rgba(255, 255, 255, .45), 0 10px 30px -18px rgba(90, 80, 180, .25);
+  --star-dust: rgba(120, 110, 210, .35);
+  --buddy-fx: drop-shadow(0 8px 12px rgba(40, 44, 120, .26)) drop-shadow(0 1px 2px rgba(40, 44, 120, .22)); --buddy-shade: rgba(40, 44, 120, .38); --blush: .22;
   color-scheme: light;
 }
+/* тёмная тема «Ночное небо»: глубокий индиго, фиолетовая дымка, белые звёзды */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #000000; --card: #1C1C1E; --fill: rgba(118, 118, 128, .24); --fill-2: rgba(118, 118, 128, .32);
-    --text: #F5F5F7; --text-2: #98989D; --text-3: #636366; --sep: rgba(84, 84, 88, .45);
-    --blue: #0A84FF; --green: #30D158; --orange: #FF9F0A; --red: #FF453A;
-    --purple: #BF5AF2; --indigo: #5E5CE6; --teal: #40C8E0; --gray: #8E8E93;
-    --shadow: 0 0 0 .5px rgba(255, 255, 255, .06); --scrim: rgba(0, 0, 0, .55); --glass: rgba(30, 30, 32, .82);
-    --btn-top: #2E2E31; --btn-bot: #1A1A1C; --btn-edge: rgba(255, 255, 255, .1); --btn-shadow: rgba(0, 0, 0, .7); --btn-icon: #636366;
-    --on-top: #3BE06E; --on-bot: #1F9E43; --halo-off: rgba(142, 142, 147, .1);
+    --bg: #060816; --glow-a: #1B1F4D; --glow-b: #2A1846; --card: #0E1124; --card-2: #161A33;
+    --line: rgba(200, 208, 255, .08); --fill: rgba(190, 198, 255, .065); --fill-2: rgba(190, 198, 255, .12); --seg-bg: rgba(190, 198, 255, .07); --seg-on: #2C3260;
+    --text: #ECEEFA; --text-2: #9DA3C4; --text-3: #686E92;
+    --accent: #9DB4FF; --accent-ink: #B3C6FF; --on-accent: #0A0E26;
+    --light: #D6E4FF;
+    --ok: #7FD8C4; --ok-ink: #8FE3CF; --warn: #F2B45A; --warn-ink: #F6C77E; --bad: #FF7D6E; --bad-ink: #FF917F; --geo: #BBA9F2;
+    --dot-off: #4C5379; --portal: rgba(200, 208, 255, .08); --cta: #A9BEFF; --rim: rgba(230, 235, 255, .08);
+    --shade: rgba(0, 0, 0, .35); --drop: rgba(0, 0, 0, .65); --halo-off: rgba(160, 170, 255, .05);
+    --elev: 0 20px 50px -30px rgba(0, 0, 0, .75); --scrim: rgba(3, 4, 14, .6); --glass: rgba(20, 24, 48, .9); --pane: rgba(16, 19, 42, .52);
+    --star: rgba(225, 232, 255, .75); --comet: rgba(230, 236, 255, .55); --comet-o: .6;
+  --star-lit: #EEF2FF; --star-glow: rgba(200, 215, 255, .55); --star-dim: .12; --star-k: 1; --star-scale: 1;
+  --day: none; --wave: var(--portal); --wave-shadow: none; --star-dust: var(--star);
+  --disc-bg: radial-gradient(120% 120% at 50% 0%, #283070, #080B1F 70%);   /* кнопка — окно в ночное небо */
+  --disc-rim: rgba(200, 210, 255, .16); --disc-shade: rgba(0, 0, 0, .5); --disc-edge: var(--line);
+  --dim: rgba(214, 224, 255, .3); --star-hover: rgba(214, 224, 255, .55); --star-solid: #fff; --star-fill-on: #fff;
+  --star-glow-f: drop-shadow(0 0 1px rgba(255, 255, 255, .9)); --star-partial: color-mix(in srgb, var(--warn) 60%, #fff); --star-auto: rgba(235, 240, 255, .85);
+  --dust-fill: #E6ECFF; --btn-lc: var(--light);
+    --buddy-fx: drop-shadow(0 0 14px rgba(200, 215, 255, .28)) drop-shadow(0 8px 12px rgba(0, 0, 0, .35)); --buddy-shade: rgba(0, 0, 0, .45); --blush: .1;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #000000; --card: #1C1C1E; --fill: rgba(118, 118, 128, .24); --fill-2: rgba(118, 118, 128, .32);
-  --text: #F5F5F7; --text-2: #98989D; --text-3: #636366; --sep: rgba(84, 84, 88, .45);
-  --blue: #0A84FF; --green: #30D158; --orange: #FF9F0A; --red: #FF453A;
-  --purple: #BF5AF2; --indigo: #5E5CE6; --teal: #40C8E0; --gray: #8E8E93;
-  --shadow: 0 0 0 .5px rgba(255, 255, 255, .06); --scrim: rgba(0, 0, 0, .55); --glass: rgba(30, 30, 32, .82);
-  --btn-top: #2E2E31; --btn-bot: #1A1A1C; --btn-edge: rgba(255, 255, 255, .1); --btn-shadow: rgba(0, 0, 0, .7); --btn-icon: #636366;
-  --on-top: #3BE06E; --on-bot: #1F9E43; --halo-off: rgba(142, 142, 147, .1);
+  --bg: #060816; --glow-a: #1B1F4D; --glow-b: #2A1846; --card: #0E1124; --card-2: #161A33;
+  --line: rgba(200, 208, 255, .08); --fill: rgba(190, 198, 255, .065); --fill-2: rgba(190, 198, 255, .12); --seg-bg: rgba(190, 198, 255, .07); --seg-on: #2C3260;
+  --text: #ECEEFA; --text-2: #9DA3C4; --text-3: #686E92;
+  --accent: #9DB4FF; --accent-ink: #B3C6FF; --on-accent: #0A0E26;
+  --light: #D6E4FF;
+  --ok: #7FD8C4; --ok-ink: #8FE3CF; --warn: #F2B45A; --warn-ink: #F6C77E; --bad: #FF7D6E; --bad-ink: #FF917F; --geo: #BBA9F2;
+  --dot-off: #4C5379; --portal: rgba(200, 208, 255, .08); --cta: #A9BEFF; --rim: rgba(230, 235, 255, .08);
+  --shade: rgba(0, 0, 0, .35); --drop: rgba(0, 0, 0, .65); --halo-off: rgba(160, 170, 255, .05);
+  --elev: 0 20px 50px -30px rgba(0, 0, 0, .75); --scrim: rgba(3, 4, 14, .6); --glass: rgba(20, 24, 48, .9); --pane: rgba(16, 19, 42, .52);
+  --star: rgba(225, 232, 255, .75); --comet: rgba(230, 236, 255, .55); --comet-o: .6;
+  --star-lit: #EEF2FF; --star-glow: rgba(200, 215, 255, .55); --star-dim: .12; --star-k: 1; --star-scale: 1;
+  --day: none; --wave: var(--portal); --wave-shadow: none; --star-dust: var(--star);
+  --disc-bg: radial-gradient(120% 120% at 50% 0%, #283070, #080B1F 70%);   /* кнопка — окно в ночное небо */
+  --disc-rim: rgba(200, 210, 255, .16); --disc-shade: rgba(0, 0, 0, .5); --disc-edge: var(--line);
+  --dim: rgba(214, 224, 255, .3); --star-hover: rgba(214, 224, 255, .55); --star-solid: #fff; --star-fill-on: #fff;
+  --star-glow-f: drop-shadow(0 0 1px rgba(255, 255, 255, .9)); --star-partial: color-mix(in srgb, var(--warn) 60%, #fff); --star-auto: rgba(235, 240, 255, .85);
+  --dust-fill: #E6ECFF; --btn-lc: var(--light);
+  --buddy-fx: drop-shadow(0 0 14px rgba(200, 215, 255, .28)) drop-shadow(0 8px 12px rgba(0, 0, 0, .35)); --buddy-shade: rgba(0, 0, 0, .45); --blush: .1;
   color-scheme: dark;
+}
+:root {
+  /* окно-кнопка — кусочек ночного неба в обеих темах, поэтому его цвета общие */
+  /* главная кнопка в светлой теме — перламутровый диск и тёмная звезда-чернила (тёмная тема переопределяет ниже) */
+  --disc-bg: radial-gradient(120% 120% at 50% 0%, #FFFFFF 0%, #F3F0FD 45%, #E2DCF6 100%);
+  --disc-rim: #FFFFFF; --disc-shade: rgba(120, 100, 200, .22); --disc-edge: rgba(255, 255, 255, .95);
+  --dim: rgba(130, 122, 184, .5); --star-hover: rgba(90, 84, 170, .65); --star-solid: #2E3283; --star-fill-on: url(#star-ink);
+  --star-glow-f: drop-shadow(0 0 1.2px rgba(59, 63, 143, .45)); --star-partial: #C9821F; --star-auto: #4A4F9E;
+  --dust-fill: #B4AAEA; --btn-lc: #8E80E8;
+  --f-text: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --f-disp: "Segoe UI Variable Display", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "Cascadia Mono", Consolas, ui-monospace, monospace;
+  --r-xl: 22px; --r-lg: 18px; --r-md: 14px;
+  --pad: clamp(20px, 2.8vw, 48px);                    /* поля сцены: растут вместе с окном */
+  --orb: clamp(180px, min(36vh, 25vw), 300px);        /* диаметр главной кнопки */
+  --ease: cubic-bezier(.32, .72, 0, 1);
+  --spring: cubic-bezier(.34, 1.56, .64, 1);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
 body {
   background: var(--bg); color: var(--text); overflow: hidden; user-select: none;
-  font: 15px/1.35 -apple-system, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased; letter-spacing: -.01em;
-  transition: background-color .3s ease;
+  font: 14.5px/1.4 var(--f-text); -webkit-font-smoothing: antialiased;
 }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; letter-spacing: inherit; }
 button:disabled { cursor: default; opacity: .4; }
-button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 2px; }
 svg { width: 20px; height: 20px; flex: none; }
 [hidden] { display: none !important; }
+.spacer { flex: 1; }
 
-/* ---- экраны: переход как в iOS */
-.app { position: relative; z-index: 1; height: 100%; max-width: 520px; margin: 0 auto; overflow: hidden; }
+/* ---- фон: индиго-свечение со стороны кнопки, фиолетовый угол, звёздная пыль и один росчерк кометы */
+.backdrop { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+  background:
+    radial-gradient(55% 75% at 32% 46%, var(--glow-a), transparent 72%),
+    radial-gradient(50% 65% at 100% 100%, var(--glow-b), transparent 70%),
+    var(--bg); }
+/* звёзды фона: при «работает» загораются по одной и тихо мерцают, при «частично» — лишь часть.
+   Их расставляет app.js (несколько десятков точек); в светлой теме — едва заметные, лавандово-белые */
+.sky-stars { position: absolute; inset: 0; }
+.sky-stars i { position: absolute; left: var(--x); top: var(--y); width: var(--s); height: var(--s); border-radius: 50%;
+  background: var(--star-lit); box-shadow: 0 0 6px 1px var(--star-glow); opacity: var(--star-dim); transition: opacity 1.4s ease var(--d); }
+.backdrop[data-state="on"] .sky-stars i, .backdrop[data-state="partial"] .sky-stars i.p {
+  opacity: calc(var(--o) * var(--star-k)); animation: twinkle-bg var(--t) ease-in-out calc(var(--d) + 1.4s) infinite; }
+@keyframes twinkle-bg { 50% { opacity: calc(var(--o) * var(--star-k) * .35); } }
+.backdrop.paused *, .backdrop.paused::before, .backdrop.paused::after { animation-play-state: paused !important; }   /* окно скрыто — фон не тратит процессор */
+/* окно без фокуса: стоит только декор, индикаторы работы движутся; окно скрыто или свёрнуто: стоит всё */
+html[data-rest="idle"] .backdrop *, html[data-rest="idle"] .backdrop *::before, html[data-rest="idle"] .backdrop *::after, html[data-rest="idle"] .buddy-wrap *, html[data-rest="idle"] .halo, html[data-rest="idle"] .s-sheen { animation-play-state: paused !important; }
+html[data-rest="all"] *, html[data-rest="all"] *::before, html[data-rest="all"] *::after { animation-play-state: paused !important; }
+.sky-stars i { transform: scale(var(--star-scale, 1)); }
+
+/* ==== светлая тема «Акварельный космос»: пастельные туманности с акварельным краем, созвездия, которые соединяются
+   при включении обхода, стеклянные орбиты вокруг кнопки. Слой .day виден только в светлой теме (--day).
+   Созвездия стоят там, где на всех экранах фон свободен: справа от заголовка, в правом верхнем углу,
+   внизу колонки с кнопкой. Только CSS и SVG; на паузе при скрытом окне, при reduced-motion — статика */
+.day { display: var(--day); position: absolute; inset: 0; background: linear-gradient(180deg, #E6EBFB 0%, #EFE9F8 50%, #FAEDE7 100%); }
+.day svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.day i { position: absolute; display: block; pointer-events: none; }
+/* бумажная зернистость — как отпечаток на хорошей бумаге */
+.grain { inset: 0; opacity: .5; mix-blend-mode: multiply;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .33 0 0 0 0 .5 0 0 0 .12 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+/* туманности: большие мягкие пятна, медленно «дышат»; лежат под панелями и по краям, не под заголовками */
+.b-neb { border-radius: 50%; }
+.b-neb.n1 { left: 20%; top: 14%; width: 44vw; height: 62vh; background: radial-gradient(closest-side, rgba(196, 178, 246, .6), transparent); }
+.b-neb.n2 { right: -6%; top: -12%; width: 44vw; height: 56vh; background: radial-gradient(closest-side, rgba(178, 206, 248, .6), transparent); }
+.b-neb.n3 { right: 4%; bottom: -16%; width: 50vw; height: 58vh; background: radial-gradient(closest-side, rgba(255, 206, 186, .6), transparent); }
+.b-neb.n4 { left: -10%; bottom: -12%; width: 38vw; height: 50vh; background: radial-gradient(closest-side, rgba(244, 192, 222, .45), transparent); }
+.b-wc { opacity: .5; }   /* акварельные пятна: статичный SVG-фильтр, считается один раз */
+/* созвездия: выключено — едва заметный тонкий контур без огней; включено — линии прорисовываются, звёзды загораются */
+.cl-base { fill: none; stroke: rgba(120, 108, 214, .16); stroke-width: 1; stroke-linecap: round; }
+.cl { fill: none; stroke: rgba(112, 100, 214, .7); stroke-width: 1.4; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 2.4s var(--ease); }
+.cp { fill: #8E84E8; opacity: .14; transition: opacity 1.2s ease, filter 1.2s ease; }
+.backdrop[data-state="on"] .cl { stroke-dashoffset: 0; }
+.backdrop[data-state="on"] .k2 :is(.cl, .cp) { transition-delay: .6s; }
+.backdrop[data-state="on"] .k3 :is(.cl, .cp) { transition-delay: 1.2s; }
+.backdrop[data-state="partial"] .k1 .cl { stroke-dashoffset: 0; }   /* частично — соединилось лишь одно созвездие */
+.backdrop[data-state="on"] .cp, .backdrop[data-state="partial"] .k1 .cp { opacity: 1; filter: drop-shadow(0 0 4px #fff) drop-shadow(0 0 2px rgba(140, 128, 240, .8)); }.backdrop::before {  /* состояние слегка окрашивает воздух: сияние — работает, янтарь — частично, коралл — ошибка */
+  content: ""; position: absolute; inset: 0; opacity: 0; transition: opacity 1.2s ease;
+  --tint: var(--light);
+  background: radial-gradient(42% 62% at 34% 46%, color-mix(in srgb, var(--tint) 16%, transparent), transparent 72%);
+}
+.backdrop[data-state="on"]::before { opacity: 1; }
+.backdrop[data-state="starting"]::before { opacity: .45; }
+.backdrop[data-state="partial"]::before { --tint: var(--warn); opacity: .7; }
+.backdrop[data-state="error"]::before { --tint: var(--bad); opacity: .55; }
+.backdrop::after {  /* звёздная пыль: три слоя с разным шагом, поэтому узор не читается как сетка */
+  content: ""; position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1.2px 1.2px at 23px 41px, var(--star-dust) 50%, transparent 100%),
+    radial-gradient(1px 1px at 131px 97px, var(--star-dust) 50%, transparent 100%),
+    radial-gradient(1.6px 1.6px at 61px 163px, var(--star-dust) 50%, transparent 100%),
+    radial-gradient(1px 1px at 197px 29px, var(--star-dust) 50%, transparent 100%),
+    radial-gradient(.9px .9px at 251px 211px, var(--star-dust) 50%, transparent 100%);
+  background-size: 173px 181px, 241px 229px, 311px 293px, 263px 277px, 337px 359px;
+  -webkit-mask-image: radial-gradient(90% 80% at 60% 20%, #000, transparent 85%); mask-image: radial-gradient(90% 80% at 60% 20%, #000, transparent 85%);
+  opacity: .8;
+}
+/* росчерк кометы в правом верхнем углу — эхо знака, под тем же наклоном */
+.comet { position: absolute; right: 8%; top: 14%; width: clamp(220px, 26vw, 460px); height: 1.5px; border-radius: 2px; transform: rotate(-21deg); transform-origin: 100% 50%;
+  background: linear-gradient(90deg, transparent, var(--comet) 85%, #fff); opacity: var(--comet-o); }
+.comet::after { content: ""; position: absolute; right: -3px; top: -2.5px; width: 6px; height: 6px; border-radius: 50%; background: #fff; box-shadow: 0 0 10px 2px var(--comet); }
+
+/* ---- каркас: сцена на всю ширину окна, внизу — строка со знаком слева, стеклянным доком по центру и «домом» NIXY справа */
+.shell { position: relative; z-index: 1; display: flex; flex-direction: column; height: 100%; }
+.bottom {
+  flex: none; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; height: 76px; padding: 0 18px 12px;
+}
+body:not([data-screen]) .bottom, body[data-screen="setup"] .bottom { display: none; }
+/* док и NIXY — одна группа по центру строки; знак NIXYZ — справа, левый край свободен */
+.dock-group { grid-column: 2; display: flex; align-items: center; gap: 10px; }
+.brand { grid-column: 3; justify-self: end; display: flex; align-items: center; gap: 10px; font: 600 16px var(--f-disp); letter-spacing: .05em; color: var(--text); opacity: .9; }
+.brand svg { width: 28px; height: 28px; }
+/* док: стеклянная капсула — состояние обхода, разделитель, пять разделов (значок + подпись) */
+.dock {
+  display: flex; align-items: center; gap: 4px; height: 62px; padding: 6px; border-radius: 22px;
+  background: var(--pane); backdrop-filter: blur(30px) saturate(1.6);
+  box-shadow: inset 0 0 0 1px var(--line), inset 0 1px 0 var(--rim), var(--elev), 0 18px 40px -24px rgba(10, 12, 40, .45);
+}
+.dock .sep { width: 1px; height: 30px; margin: 0 4px; background: var(--line); }
+.nav { position: relative; display: flex; gap: 2px; }
+.nav button {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  width: 76px; height: 50px; border-radius: 15px; color: var(--text-2); font-size: 11.5px; font-weight: 500; line-height: 1.1;
+  transition: background-color .2s, color .2s;
+}
+.nav button:hover { background: var(--fill); color: var(--text); }
+.nav button:focus-visible { outline-offset: -2px; }
+/* активный раздел: стеклянная капсула под всем пунктом с мягким свечением — одинаково для всех пунктов */
+.nav button[aria-current="page"], .nav button[aria-current="page"]:hover { color: var(--text); font-weight: 600; background: none; }
+.nav-glow {  /* капсула одна на всю панель и переезжает к выбранному пункту (navGlow в app.js) */
+  position: absolute; left: 0; top: 0; border-radius: 15px; pointer-events: none;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 20%, var(--fill-2)), color-mix(in srgb, var(--accent) 8%, var(--fill)));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 32%, transparent), inset 0 1px 0 var(--rim), 0 8px 20px -10px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+.nav-glow.ready { transition: transform .42s var(--ease); }
+@media (prefers-reduced-motion: reduce) { .nav-glow.ready { transition: none; } }
+.nav button[aria-current="page"] svg { color: var(--accent-ink); }
+.nav svg { width: 22px; height: 22px; }
+.nav svg.ic-home { width: 34px; margin: 0 -6px; }   /* знак NIXYZ вдвое шире своей высоты — даём ему ширину, чтобы по росту он сравнялся с соседями */
+.nav .dot { position: absolute; top: 6px; left: 50%; margin-left: 8px; width: 7px; height: 7px; border-radius: 50%; background: var(--accent);
+  box-shadow: 0 0 0 2px var(--card), 0 0 8px var(--accent); transform: scale(0); transition: transform .4s var(--spring); }
+.nav #b-boost.on .dot { transform: scale(1); }  /* огонёк «ускорение включено» */
+/* состояние обхода — левый край дока, виден с любого экрана; щелчок ведёт на главную */
+.side-state {
+  display: flex; align-items: center; gap: 9px; height: 50px; max-width: 250px; padding: 0 14px 0 13px; border-radius: 15px; text-align: left;
+  background: var(--fill); color: var(--text-2); font-size: 13px; font-weight: 600; transition: background-color .2s, color .4s;
+}
+.side-state:hover { background: var(--fill-2); }
+.side-state span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.side-state i { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--dot-off); transition: background-color .4s, box-shadow .4s; }
+body[data-power="on"] .side-state { color: var(--accent-ink); }
+body[data-power="on"] .side-state i { background: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent), 0 0 12px var(--light); }
+body[data-power="partial"] .side-state { color: var(--warn-ink); }
+body[data-power="partial"] .side-state i { background: var(--warn); box-shadow: 0 0 0 3px color-mix(in srgb, var(--warn) 22%, transparent); }
+body[data-power="starting"] .side-state i { background: var(--accent); animation: pulse 1s ease-in-out infinite; }
+body[data-power="error"] .side-state { color: var(--bad-ink); }
+body[data-power="error"] .side-state i { background: var(--bad); }
+
+.stage { position: relative; flex: 1; min-height: 0; }
+/* содержимое экранов — по центру окна и не шире --maxw, чтобы на 1920×1080 не растягивалось */
 .screen {
-  position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; padding: 12px 16px 24px;
+  --maxw: 1240px;
+  position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden;
+  padding: calc(var(--pad) * .7) max(var(--pad), calc((100% - var(--maxw)) / 2)) calc(var(--pad) * .5);
   display: flex; flex-direction: column;
-  transform: translateX(100%); opacity: 0; visibility: hidden;
-  transition: transform .5s var(--ease), opacity .3s ease, visibility 0s .5s;
-  scrollbar-width: none;
-}
-.screen::-webkit-scrollbar { display: none; }
-.screen > * { flex-shrink: 0; }  /* длинный экран прокручивается, а не сжимает блоки */
-.screen.back { transform: translateX(-28%); }
-.screen.active { transform: none; opacity: 1; visibility: visible; transition: transform .5s var(--ease), opacity .3s ease; }
-
-/* ---- шапка */
-.bar { display: flex; align-items: center; min-height: 44px; gap: 8px; position: relative; z-index: 2; }
-.bar .brand { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 600; letter-spacing: -.02em; }
-.bar .brand svg { width: 26px; height: 26px; }
-.bar .spacer { flex: 1; }
-.icon-btn {
-  width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
-  background: var(--fill); color: var(--text-2); transition: background-color .2s, transform .3s var(--ease);
-}
-.icon-btn:hover { background: var(--fill-2); }
-.icon-btn:hover svg { transform: rotate(45deg); }
-.icon-btn svg { width: 19px; height: 19px; transition: transform .5s var(--ease); }
-.icon-btn:active { transform: scale(.92); }
-.back-link { display: flex; align-items: center; gap: 2px; color: var(--blue); font-size: 17px; margin-left: -6px; padding: 4px 6px; border-radius: 8px; }
-.back-link svg { width: 22px; height: 22px; }
-.bar-action { color: var(--blue); font-size: 17px; padding: 4px 6px; border-radius: 8px; }
-.large-title { font-size: 32px; font-weight: 700; letter-spacing: -.03em; margin: 6px 4px 18px; }
-
-/* ---- главная: кнопка питания со стеклом, сиянием и волнами */
-.hero { flex: 1 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 0 26px; min-height: 480px; }
-.orb { position: relative; width: 176px; height: 176px; display: grid; place-items: center; --hc: var(--halo-off); }
-.orb[data-state="on"] { --hc: color-mix(in srgb, var(--green) 30%, transparent); }
-.orb[data-state="starting"] { --hc: color-mix(in srgb, var(--blue) 22%, transparent); }
-.orb[data-state="error"] { --hc: color-mix(in srgb, var(--orange) 24%, transparent); }
-.halo {
-  position: absolute; inset: -120px; border-radius: 50%; pointer-events: none;
-  background: radial-gradient(closest-side, var(--hc), transparent 72%);
-  transition: --hc .7s ease, transform .7s var(--ease), opacity .7s ease;
-}
-.orb[data-state="on"] .halo { animation: breathe 4s ease-in-out infinite; }
-.orb.pop .halo { animation: pop .9s var(--ease); }
-@keyframes breathe { 0%, 100% { transform: scale(.94); opacity: .8; } 50% { transform: scale(1.04); opacity: 1; } }
-@keyframes pop { 0% { transform: scale(.6); opacity: 0; } 45% { transform: scale(1.18); opacity: 1; } 100% { transform: scale(1); } }
-.wave { position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid var(--green); opacity: 0; pointer-events: none; }
-.orb[data-state="on"] .wave { animation: wave 3.9s cubic-bezier(.2, .6, .3, 1) infinite; }
-.orb[data-state="on"] .wave:nth-of-type(2) { animation-delay: 1.3s; }
-.orb[data-state="on"] .wave:nth-of-type(3) { animation-delay: 2.6s; }
-@keyframes wave { 0% { transform: scale(1); opacity: .45; } 100% { transform: scale(1.8); opacity: 0; } }
-
-/* капсула «Подобрать автоматически» прямо под кнопкой */
-.pill {
-  position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 7px; height: 36px; margin-top: 30px; padding: 0 16px 0 13px;
-  border-radius: 999px; font-size: 14px; font-weight: 600; color: var(--blue);
-  background: color-mix(in srgb, var(--card) 72%, transparent); backdrop-filter: blur(20px) saturate(1.6);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue) 38%, transparent), 0 6px 18px -10px color-mix(in srgb, var(--blue) 60%, transparent);
-  transition: transform .35s var(--spring), background-color .2s, color .3s, box-shadow .3s;
-}
-.pill svg { width: 15px; height: 15px; }
-.pill:hover:not(:disabled) { transform: translateY(-1px) scale(1.03); background: color-mix(in srgb, var(--blue) 12%, var(--card)); }
-.pill:active:not(:disabled) { transform: scale(.97); }
-.pill.stop { color: var(--red); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--red) 40%, transparent), 0 6px 18px -10px color-mix(in srgb, var(--red) 60%, transparent); }
-.pill.stop svg { animation: spin 2.4s linear infinite; }
-
-/* живой фон: мягкие цветные пятна медленно плывут и окрашиваются по состоянию */
-.backdrop { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; opacity: 0; transition: opacity .6s ease; }
-body.on-main .backdrop { opacity: 1; }
-.backdrop i { position: absolute; width: 340px; height: 340px; border-radius: 50%; filter: blur(70px); opacity: .22; transition: background-color 1.2s ease; }
-.backdrop i:nth-child(1) { left: -120px; top: -90px; background: var(--indigo); animation: drift1 22s ease-in-out infinite; }
-.backdrop i:nth-child(2) { right: -140px; top: 150px; background: var(--teal); animation: drift2 26s ease-in-out infinite; }
-.backdrop i:nth-child(3) { left: 30px; bottom: -200px; background: var(--purple); opacity: .14; animation: drift1 30s ease-in-out infinite reverse; }
-.backdrop[data-state="on"] i:nth-child(1), .backdrop[data-state="on"] i:nth-child(3) { background: var(--green); }
-.backdrop[data-state="error"] i:nth-child(1) { background: var(--orange); }
-.backdrop::after {  /* тонкая сетка точек, тающая к краям */
-  content: ""; position: absolute; inset: 0; opacity: .55;
-  background-image: radial-gradient(circle, var(--fill-2) 1px, transparent 1.3px); background-size: 22px 22px;
-  -webkit-mask-image: radial-gradient(ellipse 75% 45% at 50% 33%, #000, transparent 75%);
-  mask-image: radial-gradient(ellipse 75% 45% at 50% 33%, #000, transparent 75%);
-}
-@keyframes drift1 { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(60px, 50px) scale(1.15); } }
-@keyframes drift2 { 0%, 100% { transform: translate(0, 0) scale(1.1); } 50% { transform: translate(-70px, -40px) scale(.95); } }
-
-/* кольцо: вращается при запуске, честно заполняется при подборе */
-.ring { position: absolute; inset: -14px; width: calc(100% + 28px); height: calc(100% + 28px); pointer-events: none; opacity: 0; transition: opacity .3s ease; transform: rotate(-90deg); }
-.ring circle { fill: none; stroke-width: 3; }
-.ring .track { stroke: var(--fill); }
-.ring .arc { stroke: var(--blue); stroke-linecap: round; stroke-dasharray: 597; stroke-dashoffset: 448; transition: stroke-dashoffset .6s var(--ease); }
-.orb[data-state="starting"] .ring { opacity: 1; }
-.orb[data-state="starting"]:not(.auto) .ring { animation: spin-ring 1.1s linear infinite; }
-.orb[data-state="starting"]:not(.auto) .ring .track { stroke: transparent; }
-@keyframes spin-ring { from { transform: rotate(-90deg); } to { transform: rotate(270deg); } }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.power {
-  position: relative; width: 176px; height: 176px; border-radius: 50%; overflow: hidden; isolation: isolate;
-  background: linear-gradient(180deg, var(--btn-top), var(--btn-bot)); color: var(--btn-icon);
-  box-shadow: inset 0 1px 0 var(--btn-edge), 0 0 0 .5px var(--sep), 0 2px 4px -2px var(--btn-shadow), 0 22px 46px -22px var(--btn-shadow);
-  display: grid; place-items: center;
-  transition: color .4s ease, box-shadow .6s var(--ease), transform .35s var(--ease);
-}
-.power:hover:not(:disabled) { transform: scale(1.025); }
-.power:active:not(:disabled) { transform: scale(.96); }
-.power .fill {  /* зелёный растекается из центра с пружинкой */
-  position: absolute; inset: 0; z-index: -1; border-radius: 50%;
-  background: linear-gradient(180deg, var(--on-top), var(--on-bot));
-  clip-path: circle(0% at 50% 50%); transition: clip-path .7s var(--spring);
-}
-.power .shine {  /* стеклянный блик сверху */
-  position: absolute; inset: 0; z-index: 1; border-radius: 50%; pointer-events: none;
-  background: linear-gradient(180deg, rgba(255, 255, 255, .34) 0%, rgba(255, 255, 255, .06) 46%, transparent 50%);
-  opacity: .55; transition: opacity .5s ease;
-}
-.power svg { position: relative; z-index: 2; width: 60px; height: 60px; transition: transform .8s var(--ease); }
-.power[data-state="on"] { color: #fff; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), 0 24px 54px -18px color-mix(in srgb, var(--green) 80%, transparent); }
-.power[data-state="on"] .fill { clip-path: circle(75% at 50% 50%); }
-.power[data-state="on"] .shine { opacity: 1; }
-.power[data-state="on"] svg { transform: rotate(360deg); }
-.power[data-state="error"] { color: var(--orange); }
-.power[data-state="starting"] { color: var(--blue); }
-
-.status-title { margin-top: 22px; font-size: 26px; font-weight: 600; letter-spacing: -.025em; }
-.status-sub { margin-top: 6px; font-size: 15px; color: var(--text-2); max-width: 320px; min-height: 20px; }
-.uptime {
-  height: 24px; display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 4px 11px 4px 9px; border-radius: 999px;
-  background: color-mix(in srgb, var(--green) 13%, transparent); color: var(--green);
-  font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums;
-  opacity: 0; transform: translateY(-4px); transition: opacity .4s ease, transform .5s var(--ease);
-}
-.uptime.show { opacity: 1; transform: none; }
-.uptime i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: blink 2s ease-in-out infinite; }
-@keyframes blink { 50% { opacity: .35; } }
-
-/* сервисы: значок, имя и бейдж состояния */
-.services { display: flex; gap: 10px; margin-top: 18px; }
-.svc {
-  display: flex; align-items: center; gap: 9px; padding: 8px 10px 8px 9px; border-radius: 14px;
-  background: var(--card); box-shadow: var(--shadow); font-size: 14px; font-weight: 500;
-}
-.svc > svg { width: 22px; height: 22px; }
-.svc .note { color: var(--text-2); font-weight: 400; font-size: 12.5px; font-variant-numeric: tabular-nums; margin-left: -3px; }
-.badge { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; background: var(--fill); color: #fff; transition: background-color .3s ease; }
-.badge svg { width: 11px; height: 11px; display: none; }
-.badge .draw { stroke-dasharray: 24; stroke-dashoffset: 24; }
-.svc[data-tone="ok"] .badge { background: var(--green); }
-.svc[data-tone="ok"] .b-ok { display: block; }
-.svc[data-tone="ok"] .draw { animation: draw .45s .1s var(--ease) forwards; }
-.svc[data-tone="warn"] .badge { background: var(--orange); }
-.svc[data-tone="warn"] .b-warn { display: block; }
-.svc[data-tone="bad"] .badge { background: var(--red); }
-.svc[data-tone="bad"] .b-bad { display: block; }
-.svc[data-tone="wait"] .badge { background: var(--fill-2); animation: blink 1s ease-in-out infinite; }
-@keyframes draw { to { stroke-dashoffset: 0; } }
-
-/* ---- сгруппированные списки с цветными плитками, как в «Настройках» iPhone */
-.group { background: var(--card); border-radius: 16px; box-shadow: var(--shadow); overflow: hidden; }
-.group-label { font-size: 13px; color: var(--text-2); text-transform: uppercase; letter-spacing: .02em; margin: 26px 16px 7px; }
-.foot { font-size: 13px; color: var(--text-2); margin: 7px 16px 0; line-height: 1.4; }
-.row {
-  position: relative; display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px;
-  padding: 9px 14px; text-align: left; transition: background-color .15s;
-}
-.row + .row::before, .hashes + .row::before { content: ""; position: absolute; top: 0; left: 55px; right: 0; height: .5px; background: var(--sep); }
-.row.plain + .row::before, .row + .row.plain::before { left: 14px; }
-button.row:hover:not(:disabled) { background: var(--fill); }
-button.row:active:not(:disabled) { background: var(--fill-2); }
-.row .label { flex: 1; min-width: 0; }
-.row .label .d { font-size: 12.5px; color: var(--text-2); margin-top: 2px; line-height: 1.35; }
-.row .value { color: var(--text-2); max-width: 50%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.row .chev { width: 13px; height: 13px; color: var(--text-3); margin-right: -2px; transition: transform .3s var(--ease); }
-.tile {
-  width: 29px; height: 29px; border-radius: 8px; display: grid; place-items: center; flex: none; color: #fff;
-  background: var(--c, var(--gray));
-  box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .35), 0 1px 2px color-mix(in srgb, var(--c, var(--gray)) 40%, transparent);
-  transition: transform .35s var(--spring), background-color .3s;
-}
-.tile svg { width: 17px; height: 17px; }
-button.row:hover:not(:disabled) .tile { transform: scale(1.06); }
-.row.accent .label > div:first-child { color: var(--blue); font-weight: 500; }
-.row.accent.stop .label > div:first-child { color: var(--red); }
-.row.accent.stop .tile { background: var(--red); }
-.row.accent.stop .tile svg { animation: spin 2.4s linear infinite; }
-.row.danger { color: var(--red); justify-content: center; font-weight: 500; }
-
-/* переключатель как в iOS */
-.switch {
-  position: relative; width: 51px; height: 31px; border-radius: 999px; background: var(--fill-2); flex: none;
-  transition: background-color .25s ease;
-}
-.switch::after {
-  content: ""; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%;
-  background: #fff; box-shadow: 0 3px 8px rgba(0, 0, 0, .15), 0 1px 1px rgba(0, 0, 0, .16);
-  transition: transform .35s var(--spring);
-}
-.switch[aria-checked="true"] { background: var(--green); }
-.switch[aria-checked="true"]::after { transform: translateX(20px); }
-
-/* сегменты */
-.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; padding: 2px; border-radius: 9px; background: var(--fill); }
-.seg button { height: 28px; border-radius: 7px; font-size: 13px; font-weight: 500; transition: background-color .2s, box-shadow .2s; }
-.seg button[aria-pressed="true"] { background: var(--card); box-shadow: 0 1px 3px rgba(0, 0, 0, .12), 0 0 0 .5px rgba(0, 0, 0, .04); }
-:root[data-theme="dark"] .seg button[aria-pressed="true"] { background: #636366; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .seg button[aria-pressed="true"] { background: #636366; } }
-.row.stack { flex-wrap: wrap; row-gap: 10px; }
-.row.stack .seg, .row.stack .d { width: 100%; margin-left: 41px; }
-.row.stack .d { font-size: 12.5px; color: var(--text-2); margin-top: -2px; }
-
-/* целостность движка */
-.hashes { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; padding: 2px 16px 14px 55px; font-size: 12px; }
-.hashes .k { color: var(--text-2); }
-.hashes .v { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.hashes .v.hash { cursor: pointer; }
-.hashes .v.hash:hover { color: var(--blue); }
-
-.facts { list-style: none; padding: 4px 0; }
-.facts li { position: relative; display: flex; gap: 12px; padding: 10px 14px; font-size: 14px; }
-.facts li + li::before { content: ""; position: absolute; top: 0; left: 55px; right: 0; height: .5px; background: var(--sep); }
-.facts .d { color: var(--text-2); font-size: 12.5px; margin-top: 2px; }
-
-.about { text-align: center; color: var(--text-3); font-size: 12px; margin-top: 22px; line-height: 1.6; }
-.about svg { width: 34px; height: 34px; display: block; margin: 0 auto 6px; opacity: .9; }
-
-/* ---- журнал */
-.log {
-  flex: 0 1 auto; min-height: 120px; overflow-y: auto; padding: 12px 14px; border-radius: 16px; background: var(--card); box-shadow: var(--shadow);
-  font: 12.5px/1.6 ui-monospace, "Cascadia Mono", Consolas, monospace; user-select: text;
+  visibility: hidden;   /* без плавного гашения самого экрана: при быстрых переключениях WebView2 терял его слой и не рисовал содержимое */
   scrollbar-width: thin; scrollbar-color: var(--fill-2) transparent;
 }
+.screen > * { flex-shrink: 0; }
+.screen.active { visibility: visible; }
+
+/* заголовок экрана */
+.page-head { display: flex; align-items: center; gap: 12px; min-height: 44px; margin-bottom: clamp(14px, 3vh, 30px); }
+.page-title { font: 600 clamp(24px, 2.2vw, 32px)/1.15 var(--f-disp); letter-spacing: -.02em; }
+.bar-action {
+  display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 14px; border-radius: 999px;
+  background: var(--fill); font-size: 13.5px; font-weight: 600; transition: background-color .2s, transform .3s var(--ease);
+}
+.bar-action:hover { background: var(--fill-2); }
+.bar-action:active { transform: scale(.95); }
+
+/* ---- главная: слева кнопка-звезда, справа стеклянная панель сервисов */
+/* главная: сетка во всю ширину (чтобы орбиты обрезались только краем окна), а пара «кнопка + панель» — по центру, не шире --maxw */
+#s-main { --maxw: 1180px; overflow: hidden auto; padding: 0 var(--pad); }
+.main-grid {
+  padding-inline: max(0px, calc((100% - var(--maxw)) / 2));
+  flex: 1 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) clamp(360px, 34vw, 600px);
+  align-items: center; gap: clamp(24px, 3vw, 56px); min-height: 100%;
+  overflow: clip; overflow-clip-margin: var(--pad);  /* орбиты обрезаются краем окна и не дают лишней прокрутки */
+}
+.hero { position: relative; isolation: isolate; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 24px 0; }
+
+.orb { position: relative; width: var(--orb); height: var(--orb); display: grid; place-items: center; --hc: var(--halo-off); --lc: var(--btn-lc); }
+.orb.partial { --lc: var(--warn); }
+.orb[data-state="error"] { --lc: var(--bad); }
+.orb[data-state="on"] { --hc: color-mix(in srgb, var(--lc) 26%, transparent); }
+.orb[data-state="starting"] { --hc: color-mix(in srgb, var(--light) 12%, transparent); }
+.orb[data-state="error"] { --hc: color-mix(in srgb, var(--bad) 14%, transparent); }
+/* орбиты вокруг кнопки: тонкие кольца, при включении ловят свет звезды */
+.waves { position: absolute; left: 50%; top: 50%; z-index: -2; pointer-events: none; }
+.waves i {
+  position: absolute; width: var(--w); height: var(--w); margin: calc(var(--w) / -2) 0 0 calc(var(--w) / -2);
+  border: 1px solid var(--wave); box-shadow: var(--wave-shadow); border-radius: 50%; transition: border-color 1s ease;
+}
+.waves i:nth-child(1) { --w: calc(var(--orb) * 1.55); }
+.waves i:nth-child(2) { --w: calc(var(--orb) * 2.2); opacity: .75; transition-delay: .12s; }
+.waves i:nth-child(3) { --w: calc(var(--orb) * 2.95); opacity: .5; transition-delay: .24s; }
+.waves i:nth-child(4) { --w: calc(var(--orb) * 3.8); opacity: .3; transition-delay: .36s; }
+.orb[data-state="on"] .waves i { border-color: color-mix(in srgb, var(--lc) 28%, var(--line)); }
+.halo {
+  position: absolute; inset: calc(var(--orb) * -.58); border-radius: 50%; pointer-events: none; z-index: -1;
+  background: radial-gradient(closest-side, var(--hc), transparent 72%);
+  transition: --hc .8s ease, transform .7s var(--ease), opacity .7s ease;
+}
+.orb[data-state="on"] .halo { animation: breathe 5s ease-in-out infinite; }
+.orb.pop .halo { animation: pop 1s var(--ease); }
+@keyframes breathe { 0%, 100% { transform: scale(.97); opacity: .78; } 50% { transform: scale(1.02); opacity: 1; } }
+@keyframes pop { 0% { transform: scale(.7); opacity: 0; } 50% { transform: scale(1.12); opacity: 1; } 100% { transform: scale(1); } }
+
+/* засечки вокруг кнопки: идёт запуск — бежит дуга; подбор — по засечке на стратегию */
+.ring { position: absolute; inset: calc(var(--orb) * -.135); width: calc(var(--orb) * 1.27); height: calc(var(--orb) * 1.27); pointer-events: none; overflow: visible; }
+.ring .arc { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 72 682; opacity: 0;
+  transform-box: view-box; transform-origin: 132px 132px; transition: opacity .3s ease; }
+.orb[data-state="starting"]:not(.auto) .arc { opacity: 1; animation: spin 1.2s linear infinite; }
+#ticks { opacity: 0; transition: opacity .3s ease; }
+.orb.auto #ticks { opacity: 1; }
+#ticks line { stroke: var(--fill-2); stroke-width: 2.5; stroke-linecap: round; transition: stroke .4s ease; }
+#ticks line.done { stroke: var(--accent); }
+#ticks line.cur { stroke: var(--accent); animation: pulse 1s ease-in-out infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse { 50% { opacity: .3; } }
+
+/* кнопка: в тёмной теме — окно в ночное небо, в светлой — перламутровый диск; внутри знак владельца */
+.power {
+  position: relative; width: var(--orb); height: var(--orb); border-radius: 50%; display: grid; place-items: center; isolation: isolate; overflow: hidden;
+  background: var(--disc-bg);
+  box-shadow: inset 0 1px 0 var(--disc-rim), inset 0 -18px 34px -14px var(--disc-shade), 0 0 0 1px var(--disc-edge), 0 30px 52px -28px var(--drop);
+  transition: transform .4s var(--ease), box-shadow .9s var(--ease);
+}
+.power:hover:not(:disabled) { transform: scale(1.02); }
+.power:active:not(:disabled) { transform: scale(.97); }
+.power:focus-visible { outline-offset: 8px; }
+.power[data-state="on"] {
+  box-shadow: inset 0 1px 0 var(--disc-rim), inset 0 -18px 34px -14px var(--disc-shade), 0 0 0 1px color-mix(in srgb, var(--lc) 40%, transparent),
+    0 30px 64px -26px color-mix(in srgb, var(--lc) 60%, transparent);
+}
+.sky { width: 100%; height: 100%; overflow: visible; }
+.sky-dust { fill: var(--dust-fill); opacity: .3; transition: opacity 1s ease; }
+.orb[data-state="on"] .sky-dust { opacity: .6; }
+/* знак владельца в кнопке — одна цельная фигура, ничем не разрезана. Состояния меняют только
+   цвет, сияние вокруг и блик, который пробегает по звезде внутри её собственного контура */
+.s-glow { fill: var(--lc); opacity: 0; transition: opacity .9s ease; }
+.s-star { fill: var(--dim); transition: fill .8s ease, filter .8s ease; }
+.s-sheen { opacity: 0; transform: translateX(-12px); }
+.sh-a, .sh-c { stop-color: #fff; stop-opacity: 0; }
+.sh-b { stop-color: #fff; stop-opacity: .9; }
+.orb[data-state="off"] .power:hover:not(:disabled) .s-star { fill: var(--star-hover); }
+/* работает: звезда светится (белая в тёмной теме, индиго в светлой); изредка по ней пробегает блик */
+.orb[data-state="on"] .s-star { fill: var(--star-fill-on); filter: var(--star-glow-f); }
+.orb[data-state="on"] .s-glow { opacity: 1; }
+.orb[data-state="on"]:not(.partial) .s-sheen { opacity: .7; animation: sheen 7s ease-in-out 1.2s infinite; }
+/* частично: янтарь, сияние слабее */
+.orb.partial .s-star { fill: var(--star-partial); filter: none; }
+.orb.partial .s-glow { opacity: .6; }
+/* запуск: звезда загорается из тусклой в белую */
+.orb[data-state="starting"]:not(.auto) .s-star { animation: light-up 1.6s ease-in-out infinite alternate; }
+.orb[data-state="starting"]:not(.auto) .s-glow { animation: glow-up 1.6s ease-in-out infinite alternate; }
+/* подбор: звезда целиком мягко дышит, по ней бегает блик, вокруг идут засечки стратегий */
+.orb.auto .s-star { fill: var(--star-auto); animation: breathe-star 1.8s ease-in-out infinite; }
+.orb.auto .s-sheen { opacity: .85; animation: sheen 1.8s ease-in-out infinite; }
+.orb.auto .s-glow { opacity: .45; }
+/* ошибка: коралл */
+.orb[data-state="error"] .s-star { fill: var(--bad); }
+@keyframes light-up { from { fill: var(--dim); } to { fill: var(--star-solid); } }
+@keyframes glow-up { from { opacity: 0; } to { opacity: .8; } }
+@keyframes breathe-star { 50% { opacity: .6; } }
+@keyframes sheen { 0% { transform: translateX(-12px); } 45%, 100% { transform: translateX(34px); } }
+
+/* «Подобрать автоматически» — капсула прямо под кнопкой; во время подбора — «Остановить» кораллом */
+.auto-pill {
+  position: relative; display: inline-flex; align-items: center; gap: 8px; height: 38px; margin-top: calc(var(--orb) * .14); padding: 0 17px 0 13px;
+  border-radius: 999px; background: var(--pane); backdrop-filter: blur(20px) saturate(1.4); font-size: 13.5px; font-weight: 600;
+  box-shadow: inset 0 0 0 1px var(--line), inset 0 1px 0 var(--rim), var(--elev);
+  transition: background-color .25s, color .25s, box-shadow .25s, transform .35s var(--spring);
+}
+.auto-pill svg { width: 17px; height: 17px; color: var(--accent-ink); }
+.auto-pill .ic-stop, .auto-pill.stop .ic-auto { display: none; }
+.auto-pill.stop .ic-stop { display: block; }
+.auto-pill:hover:not(:disabled) { background: color-mix(in srgb, var(--fill-2) 60%, var(--pane)); }
+.auto-pill:active:not(:disabled) { transform: scale(.96); }
+.auto-pill.stop { color: var(--bad-ink); background: color-mix(in srgb, var(--bad) 12%, var(--pane)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bad) 40%, transparent); }
+.auto-pill.stop svg { color: var(--bad-ink); animation: pulse 1.4s ease-in-out infinite; }
+
+/* статус: высота зарезервирована, чтобы при смене состояний ничего не прыгало */
+.status { display: flex; flex-direction: column; align-items: center; margin-top: 18px; }
+.status-title { font: 600 clamp(22px, 2.1vw, 30px)/1.25 var(--f-disp); letter-spacing: -.015em; min-height: 1.25em; }
+.status-sub { margin-top: 4px; font-size: 14.5px; color: var(--text-2); max-width: 400px; min-height: 20px;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.uptime { display: inline-flex; align-items: center; gap: 7px; height: 0; margin-top: 0; overflow: hidden; color: var(--accent-ink);
+  font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; opacity: 0; transition: opacity .5s ease, height .5s var(--ease), margin-top .5s var(--ease); }
+.uptime.show { height: 20px; margin-top: 8px; opacity: 1; }
+.orb.partial ~ .status .uptime { color: var(--warn-ink); }
+.uptime i { flex: none; width: 6px; height: 6px; margin-inline: 3px 1px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 22%, transparent); }
+/* «Почему не работает?» — тихая ссылка под статусом, открывает диагностику */
+.diag-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 5px 11px; border-radius: 999px;
+  color: var(--text-2); font-size: 13px; font-weight: 600; transition: background-color .2s, color .2s; }
+.diag-link svg { width: 15px; height: 15px; }
+.diag-link:hover { background: var(--fill); color: var(--text); }
+
+/* ---- правая панель: стекло поверх орбит */
+.panel {
+  container-type: inline-size; display: flex; flex-direction: column; padding: 14px 14px 10px; border-radius: var(--r-xl);
+  background: var(--pane); backdrop-filter: blur(28px) saturate(1.5);
+  box-shadow: inset 0 0 0 1px var(--line), inset 0 1px 0 var(--rim), var(--elev);
+}
+.panel-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 2px 10px; }
+.panel-head h2 { font: 600 16px var(--f-disp); letter-spacing: -.01em; }
+.pill-btn {
+  display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 13px 0 10px; border-radius: 999px;
+  background: var(--fill); color: var(--accent-ink); font-size: 13px; font-weight: 600; transition: background-color .2s, transform .3s var(--spring);
+}
+.pill-btn svg { width: 16px; height: 16px; }
+.pill-btn:hover:not(:disabled) { background: var(--fill-2); }
+.pill-btn:active:not(:disabled) { transform: scale(.95); }
+
+/* сервисы: 4 плитки без дыр — ровная сетка 2×2 */
+.services { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.svc {
+  position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: 10px; min-height: 48px; padding: 7px 10px;
+  border-radius: var(--r-md); background: var(--fill); box-shadow: inset 0 0 0 1px transparent; transition: box-shadow .4s ease, background-color .4s ease;
+}
+.svc .ic { position: relative; width: 30px; height: 30px; }
+.svc .ic > svg { width: 30px; height: 30px; border-radius: 9px; box-shadow: 0 6px 14px -8px rgba(0, 0, 0, .5); }
+.svc .txt { min-width: 0; display: flex; flex-direction: column; }
+.svc b { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.svc .sub { font-size: 12px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; transition: color .3s; }
+.svc .note:not(:empty)::before { content: " · "; }
+.svc[data-tone="wait"] .note { display: none; }
+/* значок состояния сидит на углу иконки — так подписи хватает места и не нужно многоточие */
+.badge { position: absolute; right: -5px; bottom: -5px; width: 17px; height: 17px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--fill-2); color: #fff; box-shadow: 0 0 0 2px var(--card); transition: background-color .3s ease; }
+.badge svg { width: 10px; height: 10px; display: none; }
+.svc[data-tone="idle"] .badge { display: none; }
+.badge .draw { stroke-dasharray: 24; stroke-dashoffset: 24; }
+.svc[data-tone="ok"] { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ok) 28%, transparent); }
+.svc[data-tone="ok"] .sub { color: var(--ok-ink); }
+.svc[data-tone="ok"] .badge { background: var(--ok); color: #06231D; }
+.svc[data-tone="ok"] .b-ok { display: block; }
+.svc[data-tone="ok"] .draw { animation: draw .45s .1s var(--ease) forwards; }
+.svc[data-tone="warn"] { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--warn) 32%, transparent); }
+.svc[data-tone="warn"] .sub { color: var(--warn-ink); }
+.svc[data-tone="warn"] .badge { background: var(--warn); color: #241500; }
+.svc[data-tone="warn"] .b-warn { display: block; }
+.svc[data-tone="bad"] { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bad) 32%, transparent); }
+.svc[data-tone="bad"] .sub { color: var(--bad-ink); }
+.svc[data-tone="bad"] .badge { background: var(--bad); }
+.svc[data-tone="bad"] .b-bad { display: block; }
+.svc[data-tone="wait"] .badge { animation: pulse 1s ease-in-out infinite; }
+/* «закрыт для страны»: сайт открывается, но сервис закрыт для страны — спокойная лаванда, не ошибка */
+.svc[data-tone="geo"] { background: color-mix(in srgb, var(--geo) 8%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--geo) 30%, transparent); }
+.svc[data-tone="geo"] .sub { color: var(--geo); }
+.svc[data-tone="geo"] .badge { background: color-mix(in srgb, var(--geo) 20%, transparent); color: var(--geo); }
+.svc[data-tone="geo"] .b-geo { display: block; width: 11px; height: 11px; }
+/* плитка «ИИ»: мини-значки — в верхней строке справа от короткого названия; при наведении или фокусе — список ИИ со статусами */
+.svc-ai { cursor: default; }
+.svc-ai:focus-visible { outline-offset: 2px; }
+.ai-minis { position: absolute; top: 8px; right: 10px; display: flex; }
+.ai-minis svg { width: 16px; height: 16px; border-radius: 5px; box-shadow: 0 0 0 1.5px var(--card); }
+.ai-minis svg + svg { margin-left: -4px; }
+.ai-pop {   /* плитка в правой колонке, поэтому список шире неё и растёт влево */
+  position: absolute; z-index: 15; right: 0; width: min(300px, 88cqw); top: calc(100% + 6px); padding: 8px; border-radius: var(--r-md);
+  background: var(--glass); backdrop-filter: blur(30px) saturate(1.6); box-shadow: 0 0 0 1px var(--line), 0 24px 50px -20px rgba(0, 0, 0, .55);
+  opacity: 0; visibility: hidden; transform: translateY(-4px); transition: opacity .18s ease, transform .3s var(--ease), visibility 0s .3s;
+}
+.svc-ai:is(:hover, :focus-within):not(.shut) .ai-pop { opacity: 1; visibility: visible; transform: none; transition-delay: .08s, .08s, 0s; }
+.ai-item { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 7px 8px; border-radius: 10px; font-size: 13.5px; }
+.ai-item + .ai-item { box-shadow: 0 -1px 0 var(--line); }
+.ai-item > svg { width: 22px; height: 22px; border-radius: 7px; }
+.ai-item .isub { font-size: 12px; color: var(--text-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ai-item .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--fill-2); }
+.ai-item[data-tone="ok"] .dot { background: var(--ok); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 20%, transparent); }
+.ai-item[data-tone="warn"] .dot { background: var(--warn); }
+.ai-item[data-tone="bad"] .dot { background: var(--bad); }
+.ai-item[data-tone="geo"] .dot { background: var(--geo); }
+.ai-item[data-tone="wait"] .dot { animation: pulse 1s ease-in-out infinite; }
+.ai-item[data-tone="ok"] .isub { color: var(--ok-ink); }
+.ai-item[data-tone="warn"] .isub { color: var(--warn-ink); }
+.ai-item[data-tone="bad"] .isub { color: var(--bad-ink); }
+.ai-item[data-tone="geo"] .isub { color: var(--geo); }
+.ai-more { padding: 7px 8px 2px; font-size: 12px; color: var(--text-3); }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+.geo-hint[hidden] { display: none; }
+.geo-hint { display: flex; gap: 10px; margin-top: 8px; padding: 10px 12px; border-radius: 12px; font-size: 12.5px; line-height: 1.45; color: var(--text-2);
+  background: color-mix(in srgb, var(--geo) 8%, transparent); }
+.geo-hint svg { width: 16px; height: 16px; margin-top: 1px; color: var(--geo); }
+.svc-more { margin-top: 8px; text-align: center; font-size: 12px; color: var(--text-3); }
+
+/* «Умный обход»: ИИ-сервисы идут через умный DNS. Один переключатель и честная подпись; свой DNS — в Настройках */
+.smart { margin-top: 8px; padding: 10px 12px; border-radius: var(--r-md);
+  background: linear-gradient(120deg, color-mix(in srgb, var(--geo) 12%, transparent), color-mix(in srgb, var(--accent) 7%, transparent));
+  box-shadow: inset 0 0 0 1px var(--line); }
+.smart .row { padding: 0; min-height: 0; gap: 12px; }
+.smart .ico { color: var(--geo); }
+.smart:has(.switch[data-key="smart"][aria-checked="true"]) .ico { color: var(--accent-ink); }
+/* шапка блока: «как это работает» и «настроить» — тихие значки рядом с заголовком и переключателем */
+.smart-head .label > div:first-child { display: flex; align-items: center; gap: 6px; }
+.icon-link { flex: none; width: 24px; height: 24px; border-radius: 50%; display: inline-grid; place-items: center; color: var(--text-3); transition: background-color .2s, color .2s; }
+.icon-link svg { width: 16px; height: 16px; }
+.icon-link:hover, .icon-link[aria-expanded="true"] { background: var(--fill); color: var(--accent-ink); }
+/* маленький переключатель: стеклянная капсула, лёгкая (без свечения) */
+.smart-note { margin: 6px 0 0 32px; font-size: 12px; line-height: 1.4; color: var(--text-2); }
+.how { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .4s var(--ease); }
+.how.open { grid-template-rows: 1fr; }
+.how > div { overflow: hidden; }
+.how p { margin: 8px 0 0 32px; padding: 9px 11px; border-radius: 10px; background: var(--fill); font-size: 12px; line-height: 1.5; color: var(--text-2); }
+
+.controls { margin-top: 8px; border-top: 1px solid var(--line); }
+.controls .row { padding: 7px 4px; min-height: 44px; }
+.controls .row + .row::before { left: 38px; }
+.panel .foot { margin: 6px 4px 0; }
+.panel .foot:empty { display: none; }
+
+/* всплывающее меню */
+.pop-menu { position: fixed; z-index: 22; min-width: 170px; padding: 5px; border-radius: 12px; background: var(--card-2);
+  box-shadow: 0 0 0 1px var(--line), 0 18px 40px -14px rgba(0, 0, 0, .45); }
+.pop-menu button { display: flex; align-items: center; gap: 9px; width: 100%; padding: 8px 10px; border-radius: 8px; font-size: 13.5px; text-align: left; }
+.pop-menu button:hover { background: var(--fill); }
+.pop-menu button svg { width: 16px; height: 16px; color: var(--text-2); }
+.pop-menu button:disabled { opacity: .45; }
+/* меню NIXY: стеклянная карточка; заголовки групп тихие, разделитель не доходит до краёв */
+.nixy-menu { z-index: 37; min-width: 248px; max-height: calc(100vh - 24px); overflow-y: auto; padding: 6px; border-radius: 16px; scrollbar-width: thin; scrollbar-color: var(--fill-2) transparent;
+  background: var(--glass); backdrop-filter: blur(30px) saturate(1.6); box-shadow: 0 0 0 1px var(--line), inset 0 1px 0 var(--rim), 0 24px 50px -20px var(--drop); }
+.nixy-menu .mhead { padding: 6px 10px 4px; font-size: 11.5px; font-weight: 600; color: var(--text-2); }
+.nixy-menu .mhead:not(:first-child) { margin: 6px 4px 0; padding: 9px 6px 4px; border-top: 1px solid var(--line); }
+.nixy-menu button { gap: 10px; min-height: 32px; padding: 6px 10px; border-radius: 10px; transition: background-color .15s, color .15s; }
+.nixy-menu button span { white-space: nowrap; }
+.nixy-menu button svg { transition: color .15s; }
+.nixy-menu button:hover:not(:disabled) { background: var(--fill-2); }
+.nixy-menu button:is(:hover, :focus-visible):not(:disabled) svg { color: var(--accent-ink); }
+.nixy-menu button:focus-visible { outline: none; background: color-mix(in srgb, var(--accent) 16%, transparent); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--accent-ink) 70%, transparent); }
+.nixy-menu button:active:not(:disabled) { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+.nixy-menu button:disabled { opacity: .42; background: none; }
+/* ---- списки: одна поверхность на всё приложение, значки монохромные */
+.group { background: var(--card); border-radius: var(--r-lg); box-shadow: 0 0 0 1px var(--line), var(--elev); overflow: hidden; }
+.group-label { font-size: 13.5px; font-weight: 600; color: var(--text-2); margin: 0 4px 9px; }
+* + .group-label { margin-top: 26px; }
+.foot { font-size: 12.5px; color: var(--text-2); margin: 9px 4px 0; line-height: 1.45; }
+.foot.center { text-align: center; }
+.row {
+  position: relative; display: flex; align-items: center; gap: 14px; width: 100%; min-height: 52px;
+  padding: 11px 16px; text-align: left; transition: background-color .15s;
+}
+.row + .row::before, .hashes + .row::before { content: ""; position: absolute; top: 0; left: 50px; right: 0; height: 1px; background: var(--line); }
+button.row:hover:not(:disabled) { background: var(--fill); }
+button.row:active:not(:disabled) { background: var(--fill-2); }
+.controls button.row { border-radius: 10px; }
+.row:focus-visible, .popover button:focus-visible { outline-offset: -2px; border-radius: inherit; }
+.row > .ico { width: 20px; height: 20px; color: var(--text-2); }
+.row .label { flex: 1; min-width: 0; }
+.row .label .d { font-size: 12.5px; color: var(--text-2); margin-top: 2px; line-height: 1.4; }
+.row .value { color: var(--text-2); max-width: 50%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row .chev { width: 13px; height: 13px; color: var(--text-3); margin-right: -2px; transition: transform .3s var(--ease); }
+.row.danger { justify-content: center; color: var(--bad-ink); font-weight: 500; }
+.row.nested { padding-left: 50px; min-height: 44px; }
+.row.nested .label { font-size: 13.5px; color: var(--text-2); }
+/* поле ввода в строке настроек: свой DNS для ИИ */
+.field { width: 100%; margin-top: 8px; height: 34px; padding: 0 12px; border: 0; outline: 0; border-radius: 10px; background: var(--fill); color: var(--text);
+  font: 13px var(--f-mono); user-select: text; box-shadow: inset 0 0 0 1px var(--line); }
+.field:focus { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 60%, transparent); }
+.field::placeholder { color: var(--text-3); font-family: var(--f-text); }
+
+/* переключатель */
+.switch {
+  position: relative; width: 46px; height: 28px; border-radius: 999px; background: var(--fill-2); flex: none;
+  box-shadow: inset 0 0 0 1px var(--line); transition: background-color .25s ease;
+}
+.switch::after {
+  content: ""; position: absolute; top: 2px; left: 2px; width: 24px; height: 24px; border-radius: 50%;
+  background: #fff; box-shadow: 0 2px 6px rgba(0, 0, 0, .18), 0 0 0 .5px rgba(0, 0, 0, .06);
+  transition: transform .35s var(--spring);
+}
+.switch[aria-checked="true"] { background: var(--accent); box-shadow: none; }
+.switch[aria-checked="true"]::after { transform: translateX(18px); }
+
+/* сегменты */
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; padding: 3px; border-radius: 12px; background: var(--seg-bg); }
+.seg button { height: 30px; border-radius: 9px; font-size: 13.5px; font-weight: 500; color: var(--text-2); transition: background-color .2s, box-shadow .2s, color .2s; }
+.seg button:hover { color: var(--text); }
+.seg button[aria-pressed="true"] { background: var(--seg-on); color: var(--text); font-weight: 600; box-shadow: inset 0 0 0 1px var(--line), 0 1px 3px rgba(0, 0, 0, .16); }
+.row.stack { flex-wrap: wrap; row-gap: 10px; }
+.row.stack .seg, .row.stack > .d { width: calc(100% - 34px); margin-left: 34px; }
+.row.stack > .d { font-size: 12.5px; color: var(--text-2); margin-top: -2px; }
+
+/* ---- настройки: блоки раскладываются по колонкам — 2 в обычном окне, 3 на весь экран */
+.masonry { columns: 340px 3; column-gap: clamp(18px, 2vw, 32px); }
+.masonry > .blk { break-inside: avoid; display: block; padding-bottom: 26px; }
+
+/* проверка файлов движка */
+.hashes { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; padding: 2px 16px 14px 50px; font-size: 12px; }
+.hashes .k { color: var(--text-2); }
+.hashes .v { font: 400 11.5px var(--f-mono); color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hashes .v.hash { cursor: pointer; }
+.hashes .v.hash:hover { color: var(--accent-ink); }
+
+.facts { list-style: none; }
+.facts li { position: relative; display: flex; gap: 14px; padding: 12px 16px; font-size: 14.5px; }
+.facts li > .ico { width: 20px; height: 20px; color: var(--text-2); margin-top: 1px; }
+.facts li + li::before { content: ""; position: absolute; top: 0; left: 50px; right: 0; height: 1px; background: var(--line); }
+.facts .d { color: var(--text-2); font-size: 12.5px; margin-top: 2px; }
+
+.about { display: flex; align-items: center; justify-content: center; gap: 12px; color: var(--text-3); font-size: 12px; margin-top: 22px; line-height: 1.6; white-space: pre-line; }
+.about svg { width: 40px; height: 40px; }
+
+/* ---- «Ускорение»: спидометр слева (держится на месте при прокрутке), списки справа */
+.boost-grid {
+  display: grid; grid-template-columns: minmax(320px, 1fr) minmax(360px, 1.12fr); gap: clamp(24px, 4vw, 72px);
+  align-items: start; width: 100%; max-width: 1440px; margin: 0 auto;
+}
+.boost-left { position: sticky; top: 0; display: flex; flex-direction: column; }
+.gauge-card {
+  position: relative; isolation: isolate; display: flex; flex-direction: column; align-items: center; padding: 4px 0 2px; text-align: center;
+  --gw: clamp(250px, 24vw, 380px);
+  --hc: color-mix(in srgb, var(--accent) 8%, transparent); transition: --hc .8s ease;
+}
+.gauge-card[data-state="run"] { --hc: color-mix(in srgb, var(--accent) 20%, transparent); }
+.gauge-card[data-state="done"] { --hc: color-mix(in srgb, var(--accent) 14%, transparent); }
+.gauge-card::before {
+  content: ""; position: absolute; z-index: -1; left: 50%; top: calc(var(--gw) * -.22); width: calc(var(--gw) * 1.45); height: calc(var(--gw) * 1.1);
+  margin-left: calc(var(--gw) * -.725); pointer-events: none;
+  background: radial-gradient(closest-side, var(--hc), transparent 78%);
+}
+.gauge-card[data-state="run"]::before { animation: breathe 2.4s ease-in-out infinite; }
+/* --p — доля шкалы 0..1, её ставит app.js; по ней едут дуга, её свечение и бегунок */
+.gauge { width: var(--gw); height: calc(var(--gw) * .567); overflow: visible; }
+.gauge path { fill: none; stroke-width: 10; stroke-linecap: round; }
+.g-track { stroke: var(--fill-2); }
+.g-arc, .g-glow { stroke: url(#g-grad); stroke-dasharray: 100; stroke-dashoffset: 100; transition: stroke-dashoffset 1.1s var(--ease), opacity .4s ease; }
+.gg-a { stop-color: var(--accent); }
+.gg-b { stop-color: var(--geo); }
+.gauge .g-glow { stroke-width: 12; opacity: .45; }
+.g-scale line { stroke: var(--text-3); stroke-width: 1.5; stroke-linecap: round; }
+.g-scale line.major { stroke: var(--text-2); stroke-width: 2; }
+.g-scale text { fill: var(--text-3); font: 600 10.5px var(--f-text); text-anchor: middle; dominant-baseline: central; font-variant-numeric: tabular-nums; }
+.g-tip { transform-box: view-box; transform-origin: 120px 122px; transform: rotate(calc(var(--p, 0) * 180deg)); transition: transform 1.1s var(--ease), opacity .4s ease; }
+.g-knob { fill: #fff; stroke: rgba(0, 0, 0, .12); stroke-width: .5; }
+.g-halo { fill: var(--accent); opacity: .25; transform-box: fill-box; transform-origin: center; }
+.gauge-card[data-state="idle"] :is(.g-arc, .g-glow, .g-tip) { opacity: 0; }
+.gauge-card[data-state="run"] :is(.g-arc, .g-glow) { transition: stroke-dashoffset .3s linear, opacity .4s ease; }
+.gauge-card[data-state="run"] .g-tip { transition: transform .3s linear, opacity .4s ease; }
+.gauge-card[data-state="run"] .g-glow { animation: glow 1.4s ease-in-out infinite; }
+.gauge-card[data-state="run"] .g-halo { animation: ping 1.4s ease-out infinite; }
+@keyframes glow { 50% { opacity: .9; } }
+@keyframes ping { 0% { transform: scale(.6); opacity: .5; } 100% { transform: scale(2); opacity: 0; } }
+.g-num { position: relative; margin-top: calc(var(--gw) * -.25); font: 600 calc(var(--gw) * .186)/1 var(--f-disp); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.g-num small { display: block; font: 500 12.5px var(--f-text); color: var(--text-2); letter-spacing: 0; margin-top: 6px; }
+#g-down { display: inline-block; }
+.gauge-card[data-state="run"] #g-down { opacity: .65; }
+.gauge-card[data-state="idle"] #g-down { color: var(--text-3); font-weight: 300; }
+.gauge-card[data-state="done"] #g-down { animation: num-in .7s var(--spring); }
+@keyframes num-in { from { opacity: 0; transform: translateY(6px) scale(.86); } }
+.g-meta { position: relative; display: flex; align-items: center; gap: 8px; justify-content: center; min-height: 22px; margin-top: 10px; font-size: 13px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.g-meta span:empty { display: none; }
+#g-delta { padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+#g-delta[data-tone="up"] { color: var(--ok-ink); background: color-mix(in srgb, var(--ok) 14%, transparent); }
+#g-delta[data-tone="down"] { color: var(--warn-ink); background: color-mix(in srgb, var(--warn) 16%, transparent); }
+/* три источника замера под спидометром */
+.g-src { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; max-width: 460px; margin-top: 14px; }
+.g-src .src { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 10px 4px 9px; border-radius: var(--r-md);
+  box-shadow: inset 0 0 0 1px var(--line); background: var(--pane); backdrop-filter: blur(20px); transition: background-color .3s, box-shadow .3s; }
+.g-src b { font-size: 12px; font-weight: 500; color: var(--text-2); }
+.g-src .v { font: 600 18px var(--f-disp); letter-spacing: -.01em; font-variant-numeric: tabular-nums; min-height: 24px; }
+.g-src .p { font-size: 11.5px; color: var(--text-3); min-height: 15px; font-variant-numeric: tabular-nums; }
+.g-src .src[data-st="run"] { background: color-mix(in srgb, var(--accent) 10%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent); }
+.g-src .src[data-st="run"] .v { color: var(--accent-ink); }
+.g-src .src[data-st="wait"] .v, .g-src .src[data-st="none"] .v { color: var(--text-3); font-weight: 400; }
+.g-src .src[data-st="fail"] .v { color: var(--warn-ink); font-size: 13px; font-weight: 600; font-family: var(--f-text); }
+.measure { display: inline-flex; align-items: center; gap: 7px; height: 38px; margin-top: 14px; padding: 0 16px 0 13px; border-radius: 999px;
+  background: var(--fill); font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; transition: background-color .2s, transform .3s var(--spring); }
+.measure svg { width: 16px; height: 16px; color: var(--accent-ink); }
+.measure:hover:not(:disabled) { background: var(--fill-2); }
+.measure:active:not(:disabled) { transform: scale(.96); }
+.gauge-card[data-state="run"] .measure:disabled { opacity: 1; background-image: linear-gradient(90deg, color-mix(in srgb, var(--accent) 22%, transparent) calc(var(--p, 0) * 100%), transparent 0); }
+.gauge-card[data-state="run"] .measure svg { animation: pulse 1s ease-in-out infinite; }
+.g-note { position: relative; font-size: 12px; color: var(--text-2); margin-top: 8px; }
+
+/* главная кнопка экрана: светлая, с тёмным текстом */
+.cta {
+  position: relative; isolation: isolate; overflow: hidden; display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; max-width: 460px; align-self: center; height: 48px; margin-top: 20px; border-radius: var(--r-md); color: var(--on-accent); font-size: 16px; font-weight: 600;
+  background: var(--cta); box-shadow: 0 12px 26px -18px color-mix(in srgb, var(--accent) 80%, transparent);
+  transition: transform .35s var(--spring), box-shadow .3s ease, background-color .3s ease, color .3s ease;
+}
+.cta::after {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; transform: translateX(-110%);
+  background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, .35) 50%, transparent 70%);
+}
+.cta svg { width: 18px; height: 18px; }
+.cta .ic-undo, .cta.undo .ic-go { display: none; }
+.cta.undo .ic-undo { display: block; }
+.cta:hover:not(:disabled) { background: color-mix(in srgb, var(--cta) 88%, #fff); transform: translateY(-1px); }
+.cta:active:not(:disabled) { transform: scale(.98); }
+.cta:disabled { opacity: .5; }
+.cta.busy:disabled { opacity: 1; }
+.cta.busy::after { animation: cta-sheen 1.5s ease-in-out infinite; }
+@keyframes cta-sheen { from { transform: translateX(-110%); } to { transform: translateX(110%); } }
+.cta.undo { background: var(--card); color: var(--bad-ink); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bad) 38%, var(--line)), var(--elev); }
+.cta.undo:hover:not(:disabled) { background: color-mix(in srgb, var(--bad) 8%, var(--card)); }
+.cta.undo::after { display: none; }
+.cta.undo + .foot::before {
+  content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 8px; border-radius: 50%; vertical-align: 1px;
+  background: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.boost-left .foot { max-width: 440px; align-self: center; }
+
+/* список DNS: выбор одной строки, слева — радиокнопка */
+.row.dns .radio { width: 20px; height: 20px; border-radius: 50%; flex: none; box-shadow: inset 0 0 0 1.5px var(--text-3); transition: box-shadow .3s var(--ease); }
+.row.dns[aria-pressed="true"] .radio { box-shadow: inset 0 0 0 6px var(--accent); }
+.row.dns:disabled { opacity: 1; }
+.row.dns:disabled > :not(.ms) { opacity: .5; }
+.row.dns .ms {
+  flex: none; display: inline-grid; place-items: center; min-width: 58px; height: 24px; padding: 0 9px; border-radius: 999px;
+  font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap;
+  background: var(--fill); color: var(--text-2); transition: background-color .3s, color .3s;
+}
+.row.dns .ms[data-tone="fast"] { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent-ink); }
+.row.dns .ms[data-tone="slow"] { background: color-mix(in srgb, var(--warn) 15%, transparent); color: var(--warn-ink); }
+.row.dns .ms[data-tone="wait"] {
+  color: transparent; background: linear-gradient(90deg, var(--fill) 25%, var(--fill-2) 50%, var(--fill) 75%) 0 0 / 200% 100%;
+  animation: shimmer 1.3s linear infinite;
+}
+@keyframes shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+.row.dns .tag {
+  display: inline-block; margin-left: 7px; padding: 1px 8px; border-radius: 999px; vertical-align: 1px;
+  font-size: 11px; font-weight: 600; line-height: 1.5; color: var(--accent-ink); background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.row .act { flex: none; padding: 6px 13px; border-radius: 999px; background: var(--fill); color: var(--text); font-size: 13.5px; font-weight: 600; transition: background-color .2s; }
+button.row:hover:not(:disabled) .act { background: var(--fill-2); }
+.row .act.danger-act { color: var(--bad-ink); background: color-mix(in srgb, var(--bad) 12%, transparent); }
+#b-reset.off .act { color: var(--text-2); background: var(--fill); }
+.group-label.with-act { display: flex; align-items: center; justify-content: space-between; }
+.refresh { display: inline-flex; align-items: center; gap: 5px; margin: -6px -6px -6px 0; padding: 5px 10px; border-radius: 999px;
+  color: var(--accent-ink); font-size: 13px; font-weight: 600; transition: background-color .2s, transform .3s var(--spring); }
+.refresh svg { width: 14px; height: 14px; }
+.refresh:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.refresh:active:not(:disabled) { transform: scale(.94); }
+.refresh.spin { opacity: 1; }
+.refresh.spin svg { animation: spin .9s linear infinite; }
+
+/* ---- «Списки»: проверка сайта сверху, вкладки и редактор под ними */
+.lists-grid { display: grid; grid-template-columns: minmax(0, 1fr) clamp(300px, 30vw, 420px); gap: clamp(20px, 3vw, 48px); align-items: start; flex: 1 0 auto; }
+.probe { display: flex; gap: 8px; padding: 6px; border-radius: 16px; background: var(--card); box-shadow: 0 0 0 1px var(--line), var(--elev); }
+.probe:focus-within { box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 55%, transparent), var(--elev); }
+.probe svg { width: 18px; height: 18px; margin: 0 2px 0 10px; align-self: center; color: var(--text-3); }
+.probe input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; color: var(--text); font: 15px var(--f-text); user-select: text; }
+.probe input::placeholder { color: var(--text-3); }
+.probe .btn { width: auto; height: 40px; padding: 0 18px; font-size: 14px; }
+.probe-result { display: flex; align-items: center; gap: 12px; margin-top: 10px; padding: 10px 10px 10px 14px; border-radius: var(--r-md); background: var(--fill); font-size: 14px; }
+.probe-result[hidden], .probe-result .act[hidden] { display: none; }
+.probe-result .dom { font: 500 13.5px var(--f-mono); }
+.probe-result .verdict { flex: 1; min-width: 0; color: var(--text-2); font-size: 13px; }
+.probe-result .mark { flex: none; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; color: #fff; }
+.probe-result .mark svg { width: 12px; height: 12px; }
+.probe-result[data-tone="ok"] .mark { background: var(--ok); color: #06231D; }
+.probe-result[data-tone="bad"] .mark { background: var(--bad); }
+.probe-result[data-tone="bad"] .verdict { color: var(--bad-ink); }
+.probe-result .act { flex: none; height: 32px; padding: 0 13px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-size: 13px; font-weight: 600; }
+.probe-result .act:hover { background: color-mix(in srgb, var(--accent) 88%, #fff); }
+.list-tabs { margin-top: 22px; }
+.editor { display: flex; flex-direction: column; margin-top: 12px; border-radius: var(--r-lg); background: var(--card); box-shadow: 0 0 0 1px var(--line), var(--elev); overflow: hidden; }
+.editor-body { display: flex; height: clamp(200px, 42vh, 560px); font: 400 13px/1.75 var(--f-mono); }
+.gutter { flex: none; min-width: 46px; padding: 12px 10px 12px 0; text-align: right; color: var(--text-3); background: var(--fill); overflow: hidden; white-space: pre; font-variant-numeric: tabular-nums; }
+.editor textarea { flex: 1; min-width: 0; resize: none; border: 0; outline: 0; padding: 12px 16px; background: none; color: var(--text); font: inherit; user-select: text; white-space: pre; overflow: auto;
+  scrollbar-width: thin; scrollbar-color: var(--fill-2) transparent; }
+.editor-foot { display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 16px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--text-2); }
+.editor-foot .hint { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.editor-foot .hint code { font: 12px var(--f-mono); color: var(--text); }
+#list-count { font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+.editor-foot .btn { width: auto; height: 34px; padding: 0 14px; font-size: 13.5px; }
+.editor-foot kbd { font: 600 11px var(--f-text); opacity: .7; margin-left: 4px; }
+.lists-aside .facts li { font-size: 14px; }
+
+/* ---- журнал: занимает всю сцену */
 #s-log { overflow: hidden; }
-#s-log .log { flex-shrink: 1; }
-.ln { display: flex; gap: 10px; }
-.ln .tm { color: var(--text-3); flex: none; }
+.log {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 16px 20px; border-radius: var(--r-lg); background: var(--card); box-shadow: 0 0 0 1px var(--line), var(--elev);
+  font: 400 12.5px/1.75 var(--f-mono); user-select: text;
+  scrollbar-width: thin; scrollbar-color: var(--fill-2) transparent;
+}
+.ln { display: flex; gap: 14px; }
+.ln .tm { color: var(--text-3); flex: none; font-variant-numeric: tabular-nums; }
 .ln .msg { overflow-wrap: break-word; min-width: 0; }
-.ln .ok { color: var(--green); }
-.ln .err { color: var(--red); }
+.ln .ok { color: var(--ok-ink); }
+.ln .err { color: var(--bad-ink); }
 .ln .engine { color: var(--text-2); }
 
-/* ---- установка */
-.setup { flex: 1 0 auto; display: flex; flex-direction: column; justify-content: center; padding: 12px 0; }
-.setup-head { position: relative; text-align: center; margin-bottom: 30px; }
+/* ---- установка: на весь экран без боковой панели; слева знак, справа шаги */
+#s-setup { padding: var(--pad); }
+.setup {
+  flex: 1 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 460px); align-items: center;
+  gap: clamp(32px, 6vw, 110px); width: 100%; max-width: 1180px; margin: 0 auto;
+}
+.setup-head { position: relative; text-align: center; }
 .setup-head::before {
-  content: ""; position: absolute; left: 50%; top: 38px; width: 300px; height: 300px; transform: translate(-50%, -50%); pointer-events: none;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--indigo) 20%, transparent), transparent 70%);
+  content: ""; position: absolute; left: 50%; top: 32%; width: 140%; aspect-ratio: 1; transform: translate(-50%, -50%); pointer-events: none;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 18%, transparent), transparent 70%);
   animation: breathe 5s ease-in-out infinite;
 }
-.setup-head svg { position: relative; width: 76px; height: 76px; filter: drop-shadow(0 12px 24px rgba(80, 90, 240, .35)); }
-.setup-head h1 { position: relative; font-size: 30px; font-weight: 700; letter-spacing: -.03em; margin-top: 18px; }
-.setup-head p { position: relative; color: var(--text-2); margin-top: 6px; }
-.step .mark { width: 29px; height: 29px; border-radius: 50%; display: grid; place-items: center; background: var(--fill); color: var(--text-2); font-size: 13px; font-weight: 600; flex: none; position: relative; transition: background-color .3s; }
-.step .mark svg { width: 15px; height: 15px; display: none; }
-.steps .row + .row::before { left: 55px; }
+.setup-head svg { position: relative; width: clamp(88px, 10vw, 136px); height: clamp(88px, 10vw, 136px); filter: drop-shadow(0 18px 30px rgba(6, 8, 30, .45)); }
+.setup-head h1 { position: relative; font: 600 clamp(32px, 3.4vw, 48px) var(--f-disp); letter-spacing: .04em; margin-top: 20px; }
+.setup-head p { position: relative; color: var(--text-2); font-size: 15.5px; margin-top: 6px; }
+.steps .row + .row::before { left: 58px; }
+.step .mark { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--fill); color: var(--text-2); font-size: 13px; font-weight: 600; flex: none; position: relative; transition: background-color .3s; }
+.step .mark svg { width: 14px; height: 14px; display: none; }
 .steps[data-step="1"] .step[data-n="1"] .mark,
 .steps[data-step="2"] .step[data-n="2"] .mark,
 .steps[data-step="3"] .step[data-n="3"] .mark { color: transparent; background: none; }
 .steps[data-step="1"] .step[data-n="1"] .mark::after,
 .steps[data-step="2"] .step[data-n="2"] .mark::after,
 .steps[data-step="3"] .step[data-n="3"] .mark::after {
-  content: ""; position: absolute; inset: 1px; border-radius: 50%; border: 2.5px solid var(--fill-2); border-top-color: var(--blue); animation: spin .9s linear infinite;
+  content: ""; position: absolute; inset: 1px; border-radius: 50%; border: 2.5px solid var(--fill-2); border-top-color: var(--accent); animation: spin .9s linear infinite;
 }
 .steps[data-step="2"] .step[data-n="1"] .mark,
 .steps[data-step="3"] .step[data-n="1"] .mark,
 .steps[data-step="3"] .step[data-n="2"] .mark,
-.steps[data-done] .step .mark { background: var(--green); color: #fff; font-size: 0; }
+.steps[data-done] .step .mark { background: var(--accent); color: var(--on-accent); font-size: 0; }
 .steps[data-step="2"] .step[data-n="1"] .mark svg,
 .steps[data-step="3"] .step[data-n="1"] .mark svg,
 .steps[data-step="3"] .step[data-n="2"] .mark svg,
 .steps[data-done] .step .mark svg { display: block; }
 .steps[data-done] .step .mark::after { display: none; }
 .progress { height: 3px; background: var(--fill); overflow: hidden; display: none; }
-.progress i { display: block; height: 100%; width: 0; background: var(--blue); transition: width .3s ease; }
+.progress i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .3s ease; }
 .setup-status { text-align: center; font-size: 14px; color: var(--text-2); margin-top: 16px; min-height: 20px; white-space: pre-line; }
-.setup-status[data-tone="ok"] { color: var(--green); }
-.setup-status[data-tone="err"] { color: var(--red); }
+.setup-status[data-tone="ok"] { color: var(--ok-ink); }
+.setup-status:is([data-tone="bad"], [data-tone="err"]) { color: var(--bad-ink); }
+.setup-av { max-width: 640px; margin: 24px auto 0; }
 .btn {
-  display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 50px;
-  border-radius: 14px; font-size: 17px; font-weight: 600; transition: transform .2s var(--ease), background-color .2s, opacity .2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 48px;
+  border-radius: var(--r-md); font-size: 15.5px; font-weight: 600; transition: transform .2s var(--ease), background-color .2s, opacity .2s;
 }
 .btn:active:not(:disabled) { transform: scale(.98); }
-.btn-primary { background: var(--blue); color: #fff; }
-.btn-primary:hover:not(:disabled) { background: color-mix(in srgb, var(--blue) 88%, #000); }
-.btn-plain { background: var(--fill); color: var(--blue); }
+.btn-primary { background: var(--accent); color: var(--on-accent); }
+.btn-primary:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 88%, #fff); }
+.btn-plain { background: var(--fill); color: var(--text); }
 .btn-plain:hover:not(:disabled) { background: var(--fill-2); }
 .setup-actions { display: grid; gap: 10px; margin-top: 18px; }
 
-/* ---- список стратегий: непрозрачный, с тонкой прокруткой */
+/* ---- диагностика «Почему не работает?»: стеклянная панель справа поверх сцены */
+.diag { position: fixed; inset: 0; z-index: 24; display: flex; justify-content: flex-end; padding: 10px; background: var(--scrim);
+  opacity: 0; pointer-events: none; visibility: hidden; transition: opacity .25s ease, visibility 0s .3s; }
+.diag.open { opacity: 1; pointer-events: auto; visibility: visible; transition-delay: 0s; }
+.diag-card {
+  display: flex; flex-direction: column; width: min(460px, 100%); border-radius: var(--r-xl); background: var(--glass); backdrop-filter: blur(40px) saturate(1.6);
+  box-shadow: 0 0 0 1px var(--line), 0 40px 80px -30px rgba(0, 0, 0, .6); transform: translateX(24px); transition: transform .5s var(--ease); overflow: hidden;
+}
+.diag.open .diag-card { transform: none; }
+.diag-head { display: flex; align-items: flex-start; gap: 12px; padding: 22px 22px 14px; }
+.diag-head h2 { font: 600 22px var(--f-disp); letter-spacing: -.015em; }
+.diag-head p { margin-top: 3px; color: var(--text-2); font-size: 13.5px; }
+.close { flex: none; width: 32px; height: 32px; margin-left: auto; border-radius: 50%; display: grid; place-items: center; background: var(--fill); color: var(--text-2); }
+.close:hover { background: var(--fill-2); color: var(--text); }
+.close svg { width: 14px; height: 14px; }
+.diag-list { flex: 1; overflow-y: auto; padding: 0 14px; list-style: none; scrollbar-width: thin; scrollbar-color: var(--fill-2) transparent; }
+.check { display: flex; align-items: center; gap: 12px; padding: 11px 8px; border-radius: 12px; }
+.check + .check { border-top: 1px solid var(--line); }
+.check .st-ico { flex: none; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; }
+.check .st-ico svg { width: 12px; height: 12px; }
+.check .label { flex: 1; min-width: 0; font-size: 14px; }
+.check .label .d { font-size: 12.5px; color: var(--text-2); margin-top: 1px; }
+.check[data-state="ok"] .st-ico { background: color-mix(in srgb, var(--ok) 18%, transparent); color: var(--ok-ink); }
+.check[data-state="problem"] { background: color-mix(in srgb, var(--warn) 9%, transparent); border-top-color: transparent; }
+.check[data-state="problem"] + .check { border-top-color: transparent; }
+.check[data-state="problem"] .st-ico { background: var(--warn); color: #241500; }
+.check[data-state="problem"] .label .d { color: var(--warn-ink); }
+.check[data-state="wait"] .st-ico { box-shadow: inset 0 0 0 2px var(--fill-2); animation: pulse 1s ease-in-out infinite; }
+.check .st-ico .i-ok, .check .st-ico .i-pr { display: none; }
+.check[data-state="ok"] .i-ok, .check[data-state="problem"] .i-pr { display: block; }
+.check .fix { flex: none; height: 30px; padding: 0 13px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-size: 12.5px; font-weight: 600; }
+.check .fix:hover { background: color-mix(in srgb, var(--accent) 88%, #fff); }
+.check:not([data-state="problem"]) .fix { display: none; }
+.diag-foot { display: flex; align-items: center; gap: 12px; padding: 14px 22px 18px; border-top: 1px solid var(--line); }
+.diag-foot .foot { flex: 1; margin: 0; }
+.diag-foot .btn { width: auto; height: 38px; padding: 0 16px; font-size: 13.5px; }
+
+/* ---- список стратегий */
 .popover {
-  position: fixed; z-index: 20; overflow-y: auto; padding: 6px; border-radius: 14px; background: var(--card);
-  box-shadow: 0 0 0 .5px var(--sep), 0 22px 60px -14px rgba(0, 0, 0, .4);
-  opacity: 0; transform: scale(.96); pointer-events: none;
-  transition: opacity .18s ease, transform .3s var(--ease);
+  position: fixed; z-index: 20; overflow-y: auto; padding: 6px; border-radius: var(--r-md); background: var(--card-2);
+  box-shadow: 0 0 0 1px var(--line), 0 24px 60px -16px rgba(0, 0, 0, .45);
+  opacity: 0; transform: scale(.96); pointer-events: none; visibility: hidden;
+  transition: opacity .18s ease, transform .3s var(--ease), visibility 0s .3s;
   scrollbar-width: thin; scrollbar-color: var(--fill-2) transparent;
 }
-.popover.open { opacity: 1; transform: none; pointer-events: auto; }
-.popover button { display: flex; align-items: center; width: 100%; padding: 9px 12px; border-radius: 9px; text-align: left; font-size: 15px; }
+.popover.open { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition-delay: 0s; }
+.popover button { display: flex; align-items: center; width: 100%; padding: 9px 12px; border-radius: 9px; text-align: left; font-size: 14.5px; }
 .popover button:hover { background: var(--fill); }
 .popover button span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.popover button svg { width: 16px; height: 16px; color: var(--blue); }
+.popover button svg { width: 16px; height: 16px; color: var(--accent-ink); }
 .popover button[aria-selected="true"] { font-weight: 600; }
 
-/* ---- диалог как в iOS */
+/* ---- диалог */
 .scrim {
   position: fixed; inset: 0; z-index: 30; background: var(--scrim);
   display: flex; align-items: center; justify-content: center; padding: 32px;
-  opacity: 0; pointer-events: none; transition: opacity .2s ease;
+  opacity: 0; pointer-events: none; visibility: hidden; transition: opacity .2s ease, visibility 0s .2s;
 }
-.scrim.open { opacity: 1; pointer-events: auto; }
+.scrim.open { opacity: 1; pointer-events: auto; visibility: visible; transition-delay: 0s; }
 .alert {
-  width: 100%; max-width: 290px; border-radius: 16px; overflow: hidden;
-  background: var(--glass); backdrop-filter: blur(40px) saturate(1.8); box-shadow: 0 24px 60px -20px rgba(0, 0, 0, .45);
-  transform: scale(1.1); opacity: 0; transition: transform .35s var(--ease), opacity .2s ease;
+  width: 100%; max-width: 360px; border-radius: var(--r-lg); overflow: hidden;
+  background: var(--glass); backdrop-filter: blur(40px) saturate(1.6); box-shadow: 0 0 0 1px var(--line), 0 28px 60px -20px rgba(0, 0, 0, .5);
+  transform: scale(1.06); opacity: 0; transition: transform .35s var(--ease), opacity .2s ease;
 }
 .scrim.open .alert { transform: none; opacity: 1; }
-.alert p { padding: 20px 18px 18px; text-align: center; font-size: 14px; line-height: 1.45; white-space: pre-line; }
-.alert .acts { display: grid; grid-template-columns: 1fr 1fr; border-top: .5px solid var(--sep); }
+.alert p { padding: 24px 24px 22px; text-align: center; font-size: 14.5px; line-height: 1.45; white-space: pre-line; }
+.alert .acts { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--line); }
 .alert .acts.one { grid-template-columns: 1fr; }
-.alert .acts button { height: 46px; color: var(--blue); font-size: 17px; }
-.alert .acts button + button { border-left: .5px solid var(--sep); }
+.alert .acts button { height: 46px; color: var(--accent-ink); font-size: 15px; }
+.alert .acts button + button { border-left: 1px solid var(--line); }
 .alert .acts button.strong { font-weight: 600; }
 .alert .acts button:hover:not(:disabled) { background: var(--fill); }
+.alert .acts button:focus-visible { outline-offset: -3px; }
 
-/* ---- обновление: лист снизу */
-.upd { position: fixed; inset: 0; z-index: 25; display: flex; align-items: flex-end; background: var(--scrim); opacity: 0; pointer-events: none; transition: opacity .25s ease; }
-.upd.open { opacity: 1; pointer-events: auto; }
+/* ---- соглашение и политика: та же карточка, только шире и с прокруткой текста */
+.legal .upd-card { max-width: 620px; display: flex; flex-direction: column; overflow: hidden; }
+.legal-text { flex: 1 1 auto; min-height: 0; overflow-y: auto; margin-top: 14px; padding-right: 8px; font-size: 13.5px; line-height: 1.5; color: var(--text-2); scrollbar-width: thin; scrollbar-color: var(--fill-2) transparent; user-select: text; }
+.legal-text h3 { margin: 14px 0 4px; font-size: 14.5px; font-weight: 600; color: var(--text); }
+.legal-text p { margin: 0 0 8px; overflow-wrap: anywhere; }
+.legal-text ul { margin: 0 0 8px; padding-left: 20px; display: grid; gap: 4px; overflow-wrap: anywhere; }
+.legal .upd-acts { grid-template-columns: 1fr; flex: none; }
+
+/* ---- обновление: карточка по центру окна */
+.upd { position: fixed; inset: 0; z-index: 25; display: flex; align-items: center; justify-content: center; padding: 24px; background: var(--scrim); opacity: 0; pointer-events: none; visibility: hidden; transition: opacity .25s ease, visibility 0s .25s; }
+.upd.open { opacity: 1; pointer-events: auto; visibility: visible; transition-delay: 0s; }
 .upd-card {
-  width: 100%; max-width: 520px; margin: 0 auto; padding: 8px 20px 22px; border-radius: 22px 22px 0 0;
-  background: var(--card); transform: translateY(100%); transition: transform .5s var(--ease); max-height: 92%; overflow-y: auto;
+  width: 100%; max-width: 440px; max-height: 100%; overflow-y: auto; padding: 28px 26px 20px; border-radius: 24px;
+  background: var(--glass); backdrop-filter: blur(40px) saturate(1.6); box-shadow: 0 0 0 1px var(--line), 0 40px 80px -30px rgba(0, 0, 0, .6);
+  transform: translateY(16px) scale(.97); opacity: 0; transition: transform .5s var(--ease), opacity .25s ease;
+  scrollbar-width: thin; scrollbar-color: var(--fill-2) transparent;
 }
-.upd.open .upd-card { transform: none; }
-.grabber { width: 36px; height: 5px; border-radius: 3px; background: var(--fill-2); margin: 0 auto 18px; }
-.upd-icon { width: 56px; height: 56px; border-radius: 15px; margin: 0 auto 14px; display: grid; place-items: center; color: #fff; background: linear-gradient(180deg, #3D9BFF, #0060DF); box-shadow: 0 10px 24px -10px rgba(0, 113, 227, .7); }
-.upd-icon svg { width: 28px; height: 28px; }
-.upd h2 { font-size: 22px; font-weight: 700; letter-spacing: -.02em; text-align: center; }
-.upd .sub { text-align: center; color: var(--text-2); font-size: 14px; margin-top: 4px; }
-.vers { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 18px 0 14px; font-size: 17px; font-variant-numeric: tabular-nums; }
-.vers span { padding: 4px 11px; border-radius: 999px; background: var(--fill); }
-.vers .new { color: var(--blue); font-weight: 600; background: color-mix(in srgb, var(--blue) 12%, transparent); }
+.upd.open .upd-card { transform: none; opacity: 1; }
+.upd-icon { display: block; width: 60px; height: 60px; margin: 0 auto 14px; filter: drop-shadow(0 10px 18px rgba(6, 8, 30, .35)); }
+.upd h2 { font: 600 22px var(--f-disp); letter-spacing: -.015em; text-align: center; }
+.upd .sub { text-align: center; color: var(--text-2); font-size: 14px; margin: 4px auto 0; max-width: 340px; }
+.vers { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 18px 0 14px; font-size: 16px; font-variant-numeric: tabular-nums; }
+.vers span { padding: 4px 12px; border-radius: 999px; background: var(--fill); }
+.vers .new { color: var(--accent-ink); font-weight: 600; background: color-mix(in srgb, var(--accent) 14%, transparent); }
 .vers svg { width: 16px; height: 16px; color: var(--text-3); }
-.disclosure { display: flex; align-items: center; width: 100%; padding: 12px 14px; border-radius: 12px; background: var(--fill); font-weight: 500; }
-.disclosure span { flex: 1; text-align: left; }
+.disclosure { display: flex; align-items: center; gap: 8px; width: 100%; padding: 12px 14px; border-radius: var(--r-md); background: var(--fill); font-weight: 500; }
+.disclosure > span:first-child { flex: 1; text-align: left; }
+.disclosure .count { min-width: 22px; padding: 0 7px; border-radius: 999px; background: var(--fill-2); color: var(--text-2); font-size: 12px; font-weight: 600; line-height: 20px; }
+.disclosure .count:empty { display: none; }
 .disclosure svg { width: 14px; height: 14px; color: var(--text-2); transition: transform .3s var(--ease); }
 .upd.expanded .disclosure svg { transform: rotate(180deg); }
 .notes { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .4s var(--ease); }
 .upd.expanded .notes { grid-template-rows: 1fr; }
 .notes > div { overflow: hidden; }
-.notes ol { padding: 12px 6px 0 26px; font-size: 14px; color: var(--text); display: grid; gap: 7px; }
+.notes ol { padding: 12px 6px 0 26px; font-size: 14px; display: grid; gap: 7px; }
 .notes .empty { padding: 12px 6px 0; font-size: 13px; color: var(--text-2); }
-.upd .btn { margin-top: 18px; }
-.upd .btn + .btn { margin-top: 8px; }
-.upd .skip { display: block; margin: 12px auto 0; font-size: 14px; color: var(--text-2); padding: 4px 10px; border-radius: 8px; }
+.upd-acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 18px; }
+.upd-acts .btn-primary { order: 2; }
+.upd .skip { display: block; margin: 12px auto 0; font-size: 13.5px; color: var(--text-2); padding: 4px 10px; border-radius: 8px; }
+.upd .skip:hover { color: var(--text); }
 
 .toast {
-  position: fixed; left: 50%; bottom: 24px; z-index: 40; transform: translate(-50%, 12px); opacity: 0; pointer-events: none;
-  padding: 10px 16px; border-radius: 999px; background: var(--glass); backdrop-filter: blur(30px) saturate(1.8);
-  box-shadow: 0 0 0 .5px var(--sep), 0 10px 30px -10px rgba(0, 0, 0, .3); font-size: 13px; font-weight: 500; white-space: nowrap;
+  position: fixed; left: 50%; bottom: 92px; z-index: 40; transform: translate(-50%, 12px); opacity: 0; pointer-events: none;   /* над доком */
+  padding: 10px 16px; border-radius: 999px; background: var(--glass); backdrop-filter: blur(30px) saturate(1.6);
+  box-shadow: 0 0 0 1px var(--line), 0 12px 30px -12px rgba(0, 0, 0, .35); font-size: 13px; font-weight: 500; white-space: nowrap;
   transition: opacity .2s ease, transform .4s var(--ease);
 }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 .offline { position: fixed; inset: 0; z-index: 50; display: none; place-items: center; padding: 32px; background: var(--bg); color: var(--text-2); text-align: center; }
 .offline.show { display: grid; }
 
+/* ---- NIXY, звёздный помощник: белая мягкая «зефирка» с глазами-звёздами.
+   Дом — низ боковой панели (крупно, по центру); подлетает к проблеме и говорит пузырём */
+.buddy-home { flex: none; width: 86px; height: 64px; }   /* «дом» NIXY — вплотную справа от дока, «у лотка» */
+/* облёт-проверка: плитка, которую NIXY сейчас «осматривает», — мягкое свечение и бегущая полоса сканирования */
+.smart { position: relative; }
+.buddy-scan { box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent), 0 0 22px -4px color-mix(in srgb, var(--accent) 60%, transparent) !important; }
+.buddy-scan::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(100deg, transparent 30%, color-mix(in srgb, var(--light) 45%, transparent) 50%, transparent 70%) -100% 0 / 200% 100% no-repeat;
+  animation: scan-sweep 1s var(--ease) infinite; }
+@keyframes scan-sweep { to { background-position: 200% 0; } }
+.buddy-wrap[data-mood="scan"] .b-eyewrap { transform: scale(1.12, .85); }          /* всматривается */
+.buddy-wrap[data-mood="scan"] .buddy { transform: rotate(-6deg); }
+/* думает над плиткой, пока идёт проверка: чуть склонил голову, глаза вверх-вбок, мягко покачивается,
+   над головой по очереди загораются три точки. Наклон входит и выходит плавно (transition у .buddy),
+   а покачивание — у тела, маленькое, поэтому смена настроения не дёргает */
+.b-think { fill: var(--accent-ink); opacity: 0; transition: opacity .35s ease; }
+.b-think circle { transform-box: fill-box; transform-origin: center; }
+.buddy-wrap[data-mood="think"] .b-think { opacity: 1; }
+.buddy-wrap[data-mood="think"] .b-think circle { animation: think-dot 1.2s ease-in-out infinite; }
+.buddy-wrap[data-mood="think"] .b-think circle:nth-child(2) { animation-delay: .2s; }
+.buddy-wrap[data-mood="think"] .b-think circle:nth-child(3) { animation-delay: .4s; }
+.buddy-wrap[data-mood="think"] .buddy { transform: rotate(-5deg); transition: transform .8s var(--ease); }
+.buddy-wrap[data-mood="think"] .b-body { animation: think-sway 2.8s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 90%; }
+.buddy-wrap[data-mood="think"] .b-eyewrap { transform: translate(2.5px, -2.5px) scale(1.04, .9); }
+@keyframes think-dot { 0%, 100% { opacity: .22; transform: translateY(0) scale(.8); } 40% { opacity: 1; transform: translateY(-2.5px) scale(1); } }
+@keyframes think-sway { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(2.5deg) translateY(-1px); } }
+.buddy-wrap { position: fixed; left: 0; top: 0; z-index: 36; width: 84px; height: 63px;
+  transform: translate(var(--bx, 24px), var(--by, 24px)); transition: transform .9s cubic-bezier(.45, 0, .2, 1); }
+.buddy-float { width: 100%; height: 100%; animation: float 4.6s ease-in-out infinite; transition: transform .5s var(--ease); }
+.buddy-shadow { position: absolute; left: 22%; right: 22%; bottom: -12px; height: 9px; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(closest-side, var(--buddy-shade), transparent); animation: shade 4.6s ease-in-out infinite; }
+.buddy { display: block; width: 100%; height: 100%; border-radius: 26px; filter: var(--buddy-fx); transition: transform .5s var(--spring); }
+.buddy:focus-visible { outline-offset: 6px; }
+.buddy svg { width: 100%; height: 100%; overflow: visible; }
+.b-body { transform-box: fill-box; transform-origin: 50% 70%; transition: transform .5s var(--spring); }
+.b-tint { fill: var(--bad); opacity: 0; transition: opacity .5s ease; }
+.b-blush { fill: #E7B9D3; opacity: var(--blush, .22); transition: opacity .4s ease; }
+.b-eyes { transform: translate(calc(var(--ex, 0) * 1px), calc(var(--ey, 0) * 1px)); transition: transform .25s ease-out; }
+.b-eyewrap { transform-box: fill-box; transform-origin: center; transition: transform .35s var(--spring); }
+.b-eye { fill: #1A1F4D; transform-box: fill-box; transform-origin: center; animation: blink 5.5s ease-in-out infinite; transition: fill .4s ease; }
+.b-mouth { fill: none; stroke: #1A1F4D; stroke-width: 2; stroke-linecap: round; opacity: 0; transition: opacity .3s ease; }
+.b-yawn { fill: #1A1F4D; opacity: 0; transform-box: fill-box; transform-origin: center; }
+.b-zzz { fill: var(--accent-ink); font: 700 13px var(--f-disp); opacity: 0; }
+/* полёт: наклон по ходу движения, чуть меньше и выше; посадка — пружинка */
+.buddy-wrap.flying .buddy-float { transform: translateY(-8px) scale(.88); }
+.buddy-wrap.flying .buddy { transform: rotate(var(--tilt, 10deg)); }
+.buddy-wrap.flying .buddy-shadow { opacity: .3; }
+.buddy-wrap.land .buddy { animation: land .6s var(--spring); }
+@keyframes land { 0% { transform: scale(1.08, .86); } 45% { transform: scale(.95, 1.06); } 100% { transform: none; } }
+@keyframes float { 50% { transform: translateY(-5px); } }
+@keyframes shade { 50% { transform: scaleX(.82); opacity: .7; } }
+@keyframes blink { 0%, 93%, 100% { transform: scaleY(1); } 95.5% { transform: scaleY(.12); } }
+@keyframes hop { 40% { transform: translateY(-5px) scale(1.04); } 70% { transform: translateY(1px) scale(.98); } }
+@keyframes nod { 30%, 70% { transform: translateY(2.5px) rotate(-3deg); } 50% { transform: none; } }
+@keyframes shake { 0%, 100% { transform: none; } 20%, 60% { transform: translateX(-1.6px) rotate(-3deg); } 40%, 80% { transform: translateX(1.6px) rotate(3deg); } }
+@keyframes yawn { 0%, 70%, 100% { opacity: 0; transform: scale(.4); } 78%, 90% { opacity: 1; transform: scale(1); } }
+@keyframes zzz { 0% { opacity: 0; transform: translate(0, 0); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(8px, -16px); } }
+/* радуется наведению: глаза-звёзды крупнее и лёгкий подскок */
+.buddy:hover .b-eyewrap { transform: scale(1.25); }
+.buddy:hover .b-body { animation: hop .55s var(--ease); }
+/* реакции на состояние обхода */
+body[data-power="partial"] .b-body { transform: rotate(-9deg); }                  /* озадачен: голова набок, */
+body[data-power="partial"] .b-eyewrap.r { transform: scale(.62); }                /* один глаз меньше */
+body[data-power="error"] .b-body { animation: shake 1.6s ease-in-out infinite; }  /* встревожен */
+body[data-power="error"] .b-eyewrap { transform: scale(1.3); }
+body[data-power="error"] .b-tint { opacity: .12; }
+.buddy-wrap[data-mood="joy"] .b-body { animation: hop .6s var(--ease) 2; }        /* включили обход — вспых звёзд */
+.buddy-wrap[data-mood="joy"] .b-eyewrap { transform: scale(1.45) rotate(45deg); }
+.buddy-wrap[data-mood="joy"] .b-eye { fill: #6D7FF0; filter: drop-shadow(0 0 2px #9DB4FF); }
+.buddy-wrap:is([data-mood="joy"], [data-mood="happy"]) .b-mouth { opacity: 1; }
+.buddy-wrap:is([data-mood="joy"], [data-mood="happy"]) .b-blush { opacity: calc(var(--blush, .22) * 2); }
+.buddy-wrap[data-mood="happy"] .b-body { animation: nod .7s ease-in-out; }       /* благодарит и кивает */
+.buddy-wrap[data-mood="bored"] .b-eyewrap { transform: scale(1, .5); }            /* скучает: глаза полуприкрыты, зевает */
+.buddy-wrap[data-mood="bored"] .b-yawn { animation: yawn 6s ease-in-out infinite; }
+.buddy-wrap[data-mood="sleep"] .b-eyewrap { transform: scale(1, .14); }           /* уснул */
+.buddy-wrap[data-mood="sleep"] .b-eye { animation: none; }
+.buddy-wrap[data-mood="sleep"] .b-zzz text { animation: zzz 2.4s ease-in-out infinite; }
+.buddy-wrap[data-mood="sleep"] .b-zzz text + text { animation-delay: 1.2s; }
+.buddy-wrap[data-mood="sleep"] .b-zzz { opacity: 1; }
+.buddy-wrap[data-mood="sleep"] .buddy-float { animation-duration: 7s; }
+/* ---- игра с NIXY: запасные лица и реакции */
+.b-x, .b-spiral path { fill: none; stroke: #1A1F4D; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; opacity: 0; transition: opacity .2s ease; }
+.b-spiral path { stroke-width: 1.8; transform-box: fill-box; transform-origin: center; }
+.b-heart { fill: #F08BB0; opacity: 0; transform-box: fill-box; transform-origin: center; }
+.buddy { touch-action: none; cursor: grab; }
+.buddy-wrap.drag .buddy { cursor: grabbing; }
+/* обиделся: сальто, глаза «> <», потом дуется — отвернулся */
+.buddy-wrap:is([data-mood="ouch"], [data-mood="sulk"]) .b-eyes { opacity: 0; }
+.buddy-wrap[data-mood="ouch"] .b-x { opacity: 1; }
+.buddy-wrap[data-mood="ouch"] .buddy { animation: flip .8s var(--ease); }
+.buddy-wrap[data-mood="sulk"] .b-x { opacity: .9; }
+.buddy-wrap[data-mood="sulk"] .buddy { transform: rotate(8deg) scaleX(.94); }
+.buddy-wrap[data-mood="sulk"] .b-body { transform: translateX(-3px); }
+/* голова кружится: спирали вместо глаз и покачивание */
+.buddy-wrap[data-mood="dizzy"] .b-eyes { opacity: 0; }
+.buddy-wrap[data-mood="dizzy"] .b-spiral path { opacity: 1; animation: spin 1.2s linear infinite; }
+.buddy-wrap[data-mood="dizzy"] .buddy { animation: wobble 1.1s ease-in-out infinite; }
+/* тащат мышью: глаза круглые от удивления, рот «о» */
+.buddy-wrap[data-mood="drag"] .b-eyewrap { transform: scale(1.3); }
+.buddy-wrap[data-mood="drag"] .b-yawn { opacity: 1; transform: scale(.8); }
+.buddy-wrap.drag { transition: none; }
+.buddy-wrap.drag .buddy { transform: rotate(var(--tilt, 0deg)); transition: transform .12s linear; }
+.buddy-wrap.drag .buddy-shadow { opacity: .25; }
+/* проснулся от щелчка: зевает */
+.buddy-wrap[data-mood="yawn"] .b-eyewrap { transform: scale(1, .3); }
+.buddy-wrap[data-mood="yawn"] .b-yawn { opacity: 1; transform: scale(1.25); transition: transform .3s var(--spring); }
+/* гладят: жмурится от удовольствия, румянец и сердечко */
+.buddy-wrap[data-mood="pet"] .b-eyewrap { transform: scale(1.05, .32); }
+.buddy-wrap[data-mood="pet"] .b-blush { opacity: calc(var(--blush, .22) * 2.4); }
+.buddy-wrap[data-mood="pet"] .b-mouth { opacity: 1; }
+.buddy-wrap[data-mood="pet"] .b-heart { animation: heart 1.6s ease-out; }
+@keyframes flip { 0% { transform: none; } 35% { transform: translateY(-18px) rotate(-180deg); } 70% { transform: translateY(-6px) rotate(-340deg); } 100% { transform: rotate(-360deg); } }
+@keyframes wobble { 25% { transform: rotate(-9deg) translateX(-2px); } 75% { transform: rotate(9deg) translateX(2px); } }
+@keyframes heart { 0% { opacity: 0; transform: translateY(4px) scale(.5); } 25% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-14px) scale(1.1); } }
+
+/* мягкое звёздное кольцо вокруг того, о чём идёт речь */
+.buddy-target { outline: 2px solid color-mix(in srgb, var(--accent) 75%, transparent) !important; outline-offset: 4px; animation: target-glow 1.6s ease-in-out infinite; }
+@keyframes target-glow { 50% { outline-color: color-mix(in srgb, var(--light) 50%, transparent); outline-offset: 6px; } }
+/* пузырь-чат в стиле мессенджера: угол к помощнику менее скруглён */
+.bubble {
+  position: fixed; left: 0; top: 0; z-index: 37; width: max-content; max-width: 300px; min-width: 200px; padding: 13px 14px 12px; border-radius: 18px;
+  background: var(--glass); backdrop-filter: blur(30px) saturate(1.6); box-shadow: 0 0 0 1px var(--line), 0 24px 50px -20px rgba(0, 0, 0, .55);
+  opacity: 0; visibility: hidden; transform: translateY(6px) scale(.96); transition: opacity .2s ease, transform .35s var(--spring), visibility 0s .35s;
+}
+.bubble.open { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+.bubble[data-side="right"] { border-top-left-radius: 6px; }
+.bubble[data-side="left"] { border-top-right-radius: 6px; }
+.bubble[data-side="below"] { border-top-left-radius: 6px; }
+.bubble[data-side="above"] { border-bottom-left-radius: 6px; }
+.bubble-text { padding-right: 20px; font-size: 14px; line-height: 1.45; white-space: pre-line; min-height: 20px; }
+.bubble-text.typing::after { content: ""; display: inline-block; width: 2px; height: 1em; margin-left: 2px; vertical-align: -2px; background: var(--accent); animation: pulse .8s steps(1) infinite; }
+.bubble-acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.bubble-acts:empty { display: none; }
+.bubble-acts button { height: 32px; padding: 0 13px; border-radius: 999px; background: var(--fill); font-size: 13px; font-weight: 600; transition: background-color .2s, transform .3s var(--spring); }
+.bubble-acts button:first-child { background: var(--accent); color: var(--on-accent); }
+.bubble-acts button:hover { background: var(--fill-2); }
+.bubble-acts button:first-child:hover { background: color-mix(in srgb, var(--accent) 88%, #fff); }
+.bubble-acts button:active { transform: scale(.95); }
+.bubble .close { position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; }
+.bubble .close svg { width: 11px; height: 11px; }
+
+/* ---- узкое окно (минимум 960×540): чуть плотнее */
+@media (max-width: 1040px) {
+  .main-grid { grid-template-columns: minmax(0, 1fr) 360px; }
+  .boost-grid { grid-template-columns: minmax(300px, 1fr) minmax(340px, 1fr); }
+  .lists-grid { grid-template-columns: minmax(0, 1fr); }
+}
+/* невысокое окно (1120×630 и ниже): плитки чуть плотнее, чтобы правая панель влезала целиком */
+@media (max-height: 680px) {
+  .svc { padding-block: 6px; }
+}
+/* низкое окно (960×540): у правой панели остаётся воздух сверху и снизу — плитки, отступы и кнопка компактнее */
+@media (max-height: 600px) {
+  :root { --orb: clamp(160px, min(31vh, 25vw), 300px); }
+  .main-grid { padding-block: 12px; }
+  .panel { padding: 10px 12px 8px; }
+  .panel-head { margin-bottom: 6px; }
+  .svc { min-height: 44px; padding-block: 4px; }
+  .smart-head .d { display: none; }
+  .smart { padding-block: 8px; }
+  .controls { margin-top: 6px; }
+  .controls .row { min-height: 40px; padding-block: 5px; }
+  .controls .row .d { display: none; }
+  .status-sub { -webkit-line-clamp: 1; }
+  .svc-more { margin-top: 4px; font-size: 11.5px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .buddy-wrap[data-mood="think"] .b-body, .buddy-wrap[data-mood="think"] .b-think circle { animation: none; }
   *, *::before, *::after { animation-duration: 0s !important; animation-iteration-count: 1 !important; transition: none !important; }
-  .orb[data-state="on"] .wave { animation: none; opacity: .2; transform: scale(1.25); }
-  .backdrop i { animation: none !important; }
+  .gauge-card::before, .g-glow, .g-halo, #g-down, .row.dns .ms[data-tone="wait"], .cta::after, .setup-head::before, .s-star, .s-glow { animation: none !important; }
+  .s-sheen { display: none; }
+  .sky-stars i { transition: opacity 1.4s ease var(--d) !important; }   /* звёзды фона — только плавное появление, без мерцания */
 }
 </style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
-    <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#9584FF"/><stop offset=".5" stop-color="#6C72F5"/><stop offset="1" stop-color="#3FA8F5"/>
-    </linearGradient>
-    <!-- логотип: арка-проход и точка — путь сквозь стену, форма сквиркла -->
+    <linearGradient id="g-grad" x1="0" x2="1" y1="0" y2="0"><stop offset="0" class="gg-a"/><stop offset="1" class="gg-b"/></linearGradient>
+    <filter id="g-blur" x="-15%" y="-30%" width="130%" height="175%"><feGaussianBlur stdDeviation="6"/></filter>
+    <linearGradient id="lg-night" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2A2F6E"/><stop offset=".55" stop-color="#11143A"/><stop offset="1" stop-color="#07081C"/></linearGradient>
+    <linearGradient id="ai-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4553C9"/><stop offset="1" stop-color="#9A78F2"/></linearGradient>
+    <!-- знак владельца, обведён по наброску: четырёхлучевая искра с вогнутыми лучами
+         (длинный луч — вниз-влево) и изогнутый росчерк вправо-вверх, сужающийся к острию.
+         Координаты — в пикселях наброска, поэтому знак можно сверять с оригиналом -->
+    <path id="mark" transform="translate(36 28) scale(4.26)" d="M5.66451 11.2258C5.59875 9.90566 5.37991 9.07512 4.94735 8.50076C4.47062 7.8679 3.25155 7.78469 1.39239 8.25921C1.05333 8.34544 0.61256 8.47151 0.412208 8.53908C0.21237 8.60666 0.0274302 8.66112 0.00123037 8.66061C-0.0244558 8.66011 0.355186 8.45537 0.845277 8.20576C3.0137 7.09989 4.39664 6.20985 5.09428 5.47059C5.36141 5.18719 5.49806 4.9754 5.78164 4.40557C6.2106 3.54377 6.46129 2.86502 6.88203 1.42533L6.95549 1.17319L6.96115 1.76117C6.97347 3.15447 7.37983 3.99862 8.15915 4.25278C8.69701 4.42826 9.30732 4.32438 12.1806 3.56596C15.4674 2.69861 18.1675 1.977 19.9378 1.49239C20.2486 1.40768 20.6996 1.28514 20.9395 1.22059C21.1794 1.15655 21.5498 1.0562 21.7615 0.997703C21.9731 0.939208 22.528 0.787927 22.9944 0.66085C23.4609 0.533774 24.2001 0.330553 24.6378 0.209023C25.825 -0.120266 25.7762 -0.0617701 24.4842 0.393587C23.242 0.831295 19.2571 2.32343 17.5233 2.99966C13.7793 4.46054 10.4539 5.92746 8.99549 6.76102C8.15093 7.24411 7.28479 7.98489 6.86508 8.58396C6.42328 9.2143 5.99535 10.4185 5.74465 11.7377C5.70869 11.9263 5.69533 11.8395 5.66451 11.2258Z"/>  <!-- знак владельца из «Звезда.svg», форма без изменений -->
     <symbol id="logo" viewBox="0 0 64 64">
-      <path d="M32 0C50 0 58 0 61 3s3 11 3 29 0 26-3 29-11 3-29 3-26 0-29-3-3-11-3-29 0-26 3-29S14 0 32 0Z" fill="url(#lg)"/>
-      <path d="M21 47V31a11 11 0 0 1 22 0v16" fill="none" stroke="#fff" stroke-width="6.5" stroke-linecap="round"/>
-      <circle cx="32" cy="40" r="4.3" fill="#fff"/>
+      <path d="M32 0C50 0 58 0 61 3s3 11 3 29 0 26-3 29-11 3-29 3-26 0-29-3-3-11-3-29 0-26 3-29S14 0 32 0Z" fill="url(#lg-night)"/>
+      <path d="M32 .5C50 .5 57.8.5 60.6 3.4s2.9 10.6 2.9 28.6-.1 25.8-2.9 28.6S50 63.5 32 63.5 6.2 63.5 3.4 60.6.5 50 .5 32 .5 6.2 3.4 3.4 14 .5 32 .5Z" fill="none" stroke="#fff" stroke-opacity=".1"/>
+      <use href="#mark" fill="#fff" transform="translate(-9.86 7.62) scale(.46)"/>
     </symbol>
-    <symbol id="i-power" viewBox="0 0 24 24"><path d="M12 3.5v7.5M6.6 6.9a7.6 7.6 0 1 0 10.8 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
-    <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-    <symbol id="i-back" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-bang" viewBox="0 0 24 24"><path d="M12 6v7m0 4.5v.5" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/></symbol>
+    <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14.5 4.5 10 9 5.5M5 10h9.5a5 5 0 0 1 0 10H11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-    <symbol id="i-gear" viewBox="0 0 24 24"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.6-2-3.4-2.4.9a7.5 7.5 0 0 0-2.6-1.5L14 2.5h-4l-.4 2.4A7.5 7.5 0 0 0 7 6.4l-2.4-.9-2 3.4 2 1.6a7.6 7.6 0 0 0 0 3l-2 1.6 2 3.4 2.4-.9a7.5 7.5 0 0 0 2.6 1.5l.4 2.4h4l.4-2.4a7.5 7.5 0 0 0 2.6-1.5l2.4.9 2-3.4z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></symbol>
-    <!-- значки в плитках — белые линии на цветном квадрате -->
-    <symbol id="t-sliders" viewBox="0 0 24 24"><path d="M4 7h9m4 0h3M4 17h3m4 0h9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="15" cy="7" r="2.4" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="9" cy="17" r="2.4" fill="none" stroke="currentColor" stroke-width="2.2"/></symbol>
-    <symbol id="t-spark" viewBox="0 0 24 24"><path d="M11 3.5 12.9 9l5.6 2-5.6 2L11 18.5 9.1 13l-5.6-2 5.6-2zM18.5 3l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z" fill="currentColor"/></symbol>
-    <symbol id="t-pulse" viewBox="0 0 24 24"><path d="M3 12.5h4l2.4-6 5 12 2.4-6H21" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-    <symbol id="t-game" viewBox="0 0 24 24"><path d="M7.5 7h9a4.5 4.5 0 0 1 4.4 5.4l-.8 3.8a2.3 2.3 0 0 1-3.9 1.1L14 15h-4l-2.2 2.3a2.3 2.3 0 0 1-3.9-1.1l-.8-3.8A4.5 4.5 0 0 1 7.5 7Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 10v3M6.5 11.5h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="15.5" cy="10.5" r="1" fill="currentColor"/><circle cx="17" cy="12.5" r="1" fill="currentColor"/></symbol>
-    <symbol id="t-bolt" viewBox="0 0 24 24"><path d="M13.5 2.5 5 13.5h6l-1 8 8.5-11h-6z" fill="currentColor"/></symbol>
-    <symbol id="t-win" viewBox="0 0 24 24"><path d="M4 5.5 11 4.6v6.9H4zM13 4.3 20 3.4v8.1h-7zM4 13.5h7v6.9l-7-.9zM13 13.5h7v7.1l-7-.9z" fill="currentColor"/></symbol>
-    <symbol id="t-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3.5 12h17M12 3.5c2.4 2.5 3.6 5.3 3.6 8.5s-1.2 6-3.6 8.5c-2.4-2.5-3.6-5.3-3.6-8.5S9.6 6 12 3.5Z" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
-    <symbol id="t-theme" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></symbol>
-    <symbol id="t-cube" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9zM4 7.5l8 4.5 8-4.5M12 12v9" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></symbol>
-    <symbol id="t-update" viewBox="0 0 24 24"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-    <symbol id="t-list" viewBox="0 0 24 24"><path d="M9 6.5h11M9 12h11M9 17.5h11" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="4.8" cy="6.5" r="1.3" fill="currentColor"/><circle cx="4.8" cy="12" r="1.3" fill="currentColor"/><circle cx="4.8" cy="17.5" r="1.3" fill="currentColor"/></symbol>
-    <symbol id="t-shield" viewBox="0 0 24 24"><path d="M12 3 5 6v5.5c0 4.4 3 8.2 7 9.5 4-1.3 7-5.1 7-9.5V6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-    <symbol id="t-folder" viewBox="0 0 24 24"><path d="M3 7.5A1.5 1.5 0 0 1 4.5 6H9l2 2h8.5A1.5 1.5 0 0 1 21 9.5v8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z" fill="currentColor"/></symbol>
-    <symbol id="t-swap" viewBox="0 0 24 24"><path d="M4 8h14m-4-4 4 4-4 4M20 16H6m4 4-4-4 4-4" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-    <symbol id="t-code" viewBox="0 0 24 24"><path d="m8.5 7-5 5 5 5m7-10 5 5-5 5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-    <symbol id="t-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M4 20 20 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
-    <symbol id="t-wifi" viewBox="0 0 24 24"><path d="M3 9a13 13 0 0 1 18 0M6.2 12.4a8.5 8.5 0 0 1 11.6 0M9.4 15.7a4 4 0 0 1 5.2 0" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><circle cx="12" cy="19" r="1.4" fill="currentColor"/></symbol>
-    <!-- сервисы -->
-    <symbol id="i-yt" viewBox="0 0 24 24"><rect x="1.5" y="4.5" width="21" height="15" rx="4.6" fill="#FF0033"/><path d="M10 8.8v6.4l5.4-3.2z" fill="#fff"/></symbol>
-    <symbol id="i-dc" viewBox="0 0 24 24"><rect x="1.5" y="1.5" width="21" height="21" rx="6.5" fill="#5865F2"/><path d="M8 8.4c1.2-.5 2.5-.8 4-.8s2.8.3 4 .8c1 1.5 1.5 3.2 1.4 5.2-1 .8-2.1 1.3-3.2 1.6l-.6-1c.4-.1.8-.3 1.2-.6-1.7.8-3.9.8-5.6 0 .4.3.8.5 1.2.6l-.6 1c-1.1-.3-2.2-.8-3.2-1.6-.1-2 .4-3.7 1.4-5.2z" fill="#fff"/><circle cx="10" cy="12" r="1" fill="#5865F2"/><circle cx="14" cy="12" r="1" fill="#5865F2"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.6-2-3.4-2.4.9a7.5 7.5 0 0 0-2.6-1.5L14 2.5h-4l-.4 2.4A7.5 7.5 0 0 0 7 6.4l-2.4-.9-2 3.4 2 1.6a7.6 7.6 0 0 0 0 3l-2 1.6 2 3.4 2.4-.9a7.5 7.5 0 0 0 2.6 1.5l.4 2.4h4l.4-2.4a7.5 7.5 0 0 0 2.6-1.5l2.4.9 2-3.4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <!-- монохромные значки строк: линии 1.8, цвет берут из текста -->
+    <!-- «Главная» — знак NIXYZ владельца (#mark), цвет из currentColor; квадратная рамка вокруг знака (≈110×51) по центру -->
+    <symbol id="t-home" viewBox="34 20 115 66"><use href="#mark" fill="currentColor"/></symbol>   <!-- знак вытянут по ширине: рамка шире квадрата, иначе он втрое ниже соседних значков -->
+
+    <symbol id="t-spark" viewBox="0 0 24 24"><path d="M10 3.5c.5 4.6 2.4 6.5 7 7-4.6.5-6.5 2.4-7 7-.5-4.6-2.4-6.5-7-7 4.6-.5 6.5-2.4 7-7Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M18 14.5c.2 1.9 1 2.8 3 3-2 .2-2.8 1.1-3 3-.2-1.9-1-2.8-3-3 2-.2 2.8-1.1 3-3Z" fill="currentColor"/></symbol>
+    <symbol id="t-lists" viewBox="0 0 24 24"><path d="M5 4.5h11l3 3v12H5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.5 10.5h7M8.5 14h7M8.5 17.5h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+    <symbol id="t-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="m15 15 5 5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
+    <symbol id="t-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.7-.9 1.3v.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="16.6" r="1.1" fill="currentColor"/></symbol>
+    <symbol id="t-sliders" viewBox="0 0 24 24"><path d="M4 7h9m4 0h3M4 17h3m4 0h9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="15" cy="7" r="2.3" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="9" cy="17" r="2.3" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="t-auto" viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 13.7-5.6M20 12a8 8 0 0 1-13.7 5.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M18 3v3.6h-3.6M6 21v-3.6h3.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8.5c.3 2.2 1.3 3.2 3.5 3.5-2.2.3-3.2 1.3-3.5 3.5-.3-2.2-1.3-3.2-3.5-3.5 2.2-.3 3.2-1.3 3.5-3.5Z" fill="currentColor"/></symbol>
+    <symbol id="t-route" viewBox="0 0 24 24"><path d="M3.5 12H8c3 0 4-5.5 8-5.5h4.5M8 12c3 0 4 5.5 8 5.5h4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="m18 4 2.5 2.5L18 9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20.3" cy="17.5" r="1.4" fill="currentColor"/></symbol>
+    <symbol id="t-stop" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2.6" fill="currentColor"/></symbol>
+    <symbol id="t-pulse" viewBox="0 0 24 24"><path d="M3 12.5h4l2.4-6 5 12 2.4-6H21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="t-game" viewBox="0 0 24 24"><path d="M7.5 7h9a4.5 4.5 0 0 1 4.4 5.4l-.8 3.8a2.3 2.3 0 0 1-3.9 1.1L14 15h-4l-2.2 2.3a2.3 2.3 0 0 1-3.9-1.1l-.8-3.8A4.5 4.5 0 0 1 7.5 7Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 10v3M6.5 11.5h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="15.5" cy="10.5" r="1" fill="currentColor"/><circle cx="17" cy="12.5" r="1" fill="currentColor"/></symbol>
+    <symbol id="t-bolt" viewBox="0 0 24 24"><path d="M13.5 2.5 5 13.5h6l-1 8 8.5-11h-6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="t-bolt-f" viewBox="0 0 24 24"><path d="M13.5 2.5 5 13.5h6l-1 8 8.5-11h-6z" fill="currentColor"/></symbol>
+    <symbol id="t-win" viewBox="0 0 24 24"><path d="M4 5.6 11 4.7v6.8H4zM13 4.4l7-.9v8h-7zM4 13.5h7v6.8l-7-.9zM13 13.5h7v7l-7-.9z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+    <symbol id="t-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 12h17M12 3.5c2.4 2.5 3.6 5.3 3.6 8.5s-1.2 6-3.6 8.5c-2.4-2.5-3.6-5.3-3.6-8.5S9.6 6 12 3.5Z" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+    <symbol id="t-theme" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></symbol>
+    <symbol id="t-cube" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9zM4 7.5l8 4.5 8-4.5M12 12v9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
+    <symbol id="t-update" viewBox="0 0 24 24"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="t-upload" viewBox="0 0 24 24"><path d="M12 15V4m0 0L7.5 8.5M12 4l4.5 4.5M5 20h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="t-list" viewBox="0 0 24 24"><path d="M9 6.5h11M9 12h11M9 17.5h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="4.8" cy="6.5" r="1.2" fill="currentColor"/><circle cx="4.8" cy="12" r="1.2" fill="currentColor"/><circle cx="4.8" cy="17.5" r="1.2" fill="currentColor"/></symbol>
+    <symbol id="t-shield" viewBox="0 0 24 24"><path d="M12 3 5 6v5.5c0 4.4 3 8.2 7 9.5 4-1.3 7-5.1 7-9.5V6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="t-watch" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.8" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="t-moon" viewBox="0 0 24 24"><path d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
+    <symbol id="t-bell" viewBox="0 0 24 24"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.5h-15zM10 20.5h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="t-dns" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="6" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="3.5" y="13.5" width="17" height="6" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="7.5" cy="7.5" r="1.1" fill="currentColor"/><circle cx="7.5" cy="16.5" r="1.1" fill="currentColor"/></symbol>
+    <symbol id="t-report" viewBox="0 0 24 24"><path d="M6 3.5h8l4 4v13H6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 12h6M9 15.5h6M9 8.5h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+    <symbol id="t-folder" viewBox="0 0 24 24"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2h8a1.5 1.5 0 0 1 1.5 1.5v8A1.5 1.5 0 0 1 19 19H5a1.5 1.5 0 0 1-1.5-1.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="t-swap" viewBox="0 0 24 24"><path d="M4 8h14m-4-4 4 4-4 4M20 16H6m4 4-4-4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="t-code" viewBox="0 0 24 24"><path d="m8.5 7-5 5 5 5m7-10 5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="t-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 20 20 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4.5v4h-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="t-gauge" viewBox="0 0 24 24"><path d="M4.2 17.5a9 9 0 1 1 15.6 0" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="m12 13.5 4.2-4.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="13.6" r="1.8" fill="currentColor"/></symbol>
+    <symbol id="t-broom" viewBox="0 0 24 24"><path d="m14.5 3.5-4 7.2M6.4 11.6l7.6 4.2-2.3 4.7c-2.9-.6-5.6-2.1-7.4-4.3zM7.8 12.2l6.4 3.6 1.3-2.4a2 2 0 0 0-.8-2.7l-2.9-1.6a2 2 0 0 0-2.7.8z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="t-wifi" viewBox="0 0 24 24"><path d="M3 9a13 13 0 0 1 18 0M6.2 12.4a8.5 8.5 0 0 1 11.6 0M9.4 15.7a4 4 0 0 1 5.2 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="19" r="1.3" fill="currentColor"/></symbol>
+    <!-- сервисы: единые плитки 24×24 со скруглением, фирменный цвет фона, белый упрощённый знак -->
+    <symbol id="i-yt" viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="6.5" fill="#FF0033"/><path d="M9.7 8.2v7.6l6.4-3.8z" fill="#fff" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-dc" viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="6.5" fill="#5865F2"/><path d="M8 8.4c1.2-.5 2.5-.8 4-.8s2.8.3 4 .8c1 1.5 1.5 3.2 1.4 5.2-1 .8-2.1 1.3-3.2 1.6l-.6-1c.4-.1.8-.3 1.2-.6-1.7.8-3.9.8-5.6 0 .4.3.8.5 1.2.6l-.6 1c-1.1-.3-2.2-.8-3.2-1.6-.1-2 .4-3.7 1.4-5.2z" fill="#fff"/><circle cx="10" cy="12" r="1" fill="#5865F2"/><circle cx="14" cy="12" r="1" fill="#5865F2"/></symbol>
+    <!-- «ИИ»: звёздная плитка индиго → лаванда, большая и малая искры -->
+    <symbol id="i-ai" viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="6.5" fill="url(#ai-g)"/><path d="M10.5 5.5c.45 3.6 2 5.15 5.6 5.6-3.6.45-5.15 2-5.6 5.6-.45-3.6-2-5.15-5.6-5.6 3.6-.45 5.15-2 5.6-5.6Z" fill="#fff"/><path d="M17 13.8c.2 1.5.85 2.15 2.35 2.35-1.5.2-2.15.85-2.35 2.35-.2-1.5-.85-2.15-2.35-2.35 1.5-.2 2.15-.85 2.35-2.35Z" fill="#fff" opacity=".85"/></symbol>
+    <!-- Grok: нейтральный знак — кольцо, пересечённое косой чертой; не фирменный логотип -->
+    <symbol id="i-grok" viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="6.5" fill="#23262F"/><rect x="1.4" y="1.4" width="21.2" height="21.2" rx="6.1" fill="none" stroke="#fff" stroke-opacity=".14" stroke-width=".8"/><circle cx="12" cy="12" r="5.4" fill="none" stroke="#fff" stroke-width="1.6"/><path d="M6.6 17.4 17.4 6.6" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-cf" viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="6.5" fill="#F38020"/><path d="M7.2 16.8h10.3a2.9 2.9 0 0 0 .3-5.8 4.4 4.4 0 0 0-8.5-1.1A3.4 3.4 0 0 0 7.2 16.8Z" fill="#fff"/></symbol>
+    <symbol id="i-gpt" viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="6.5" fill="#111413"/><rect x="1.4" y="1.4" width="21.2" height="21.2" rx="6.1" fill="none" stroke="#fff" stroke-opacity=".14" stroke-width=".8"/>
+      <g fill="none" stroke="#fff" stroke-width="1.35"><rect x="11.5" y="4.7" width="4.2" height="8.6" rx="2.1"/><rect x="11.5" y="4.7" width="4.2" height="8.6" rx="2.1" transform="rotate(60 12 12)"/><rect x="11.5" y="4.7" width="4.2" height="8.6" rx="2.1" transform="rotate(120 12 12)"/><rect x="11.5" y="4.7" width="4.2" height="8.6" rx="2.1" transform="rotate(180 12 12)"/><rect x="11.5" y="4.7" width="4.2" height="8.6" rx="2.1" transform="rotate(240 12 12)"/><rect x="11.5" y="4.7" width="4.2" height="8.6" rx="2.1" transform="rotate(300 12 12)"/></g></symbol>
+    <symbol id="i-cl" viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="6.5" fill="#D97757"/><path d="M14.4 12h5.2M14.08 13.2l3.29 1.9M13.2 14.08l2.6 4.5M12 14.4v3.8M10.8 14.08l-2.6 4.5M9.92 13.2l-3.29 1.9M9.6 12H4.4M9.92 10.8 6.63 8.9M10.8 9.92 8.2 5.42M12 9.6V5.8M13.2 9.92l2.6-4.5M14.08 10.8l3.29-1.9" stroke="#fff" stroke-width="1.75" stroke-linecap="round"/></symbol>
   </defs>
 </svg>
 
-<div class="backdrop" id="backdrop" data-state="off" aria-hidden="true"><i></i><i></i><i></i></div>
-<div class="app">
+<div class="backdrop" id="backdrop" data-state="off" aria-hidden="true">
+  <!-- светлая тема «Акварельный космос». Координаты в сетке 1600×900 (≈ окно 16:9):
+       боковая панель — x < 320, заголовки экранов — x 360–600, y < 110; колонка с кнопкой на главной — x 320–1000 -->
+  <div class="day">
+    <i class="b-neb n1"></i><i class="b-neb n2"></i><i class="b-neb n3"></i><i class="b-neb n4"></i>
+    <svg class="b-wc" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+      <defs><filter id="wc" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency=".011" numOctaves="3" seed="7"/><feDisplacementMap in="SourceGraphic" scale="70"/><feGaussianBlur stdDeviation="5"/></filter></defs>
+      <g filter="url(#wc)"><ellipse cx="880" cy="60" rx="200" ry="80" fill="#D7C9F7"/><ellipse cx="1420" cy="760" rx="240" ry="110" fill="#FFD9C7"/><ellipse cx="160" cy="330" rx="150" ry="120" fill="#CFE0FA"/><ellipse cx="640" cy="890" rx="190" ry="70" fill="#F6D1E6"/></g>
+    </svg>
+    <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+      <!-- созвездия: тонкий бледный контур всегда (.cl-base); при включении поверх прорисовываются линии и загораются звёзды.
+           k1 — правый верхний угол, k2 — внизу колонки с кнопкой, k3 — справа от заголовков, над кнопкой -->
+      <g class="k1"><polyline class="cl-base" points="1110,72 1180,36 1250,62 1320,30 1390,80 1300,98"/><polyline class="cl" pathLength="1" points="1110,72 1180,36 1250,62 1320,30 1390,80 1300,98"/>
+        <circle class="cp" cx="1110" cy="72" r="2.6"/><circle class="cp" cx="1180" cy="36" r="3.2"/><circle class="cp" cx="1250" cy="62" r="2.4"/><circle class="cp" cx="1320" cy="30" r="3.4"/><circle class="cp" cx="1390" cy="80" r="2.6"/><circle class="cp" cx="1300" cy="98" r="2.4"/></g>
+      <g class="k2"><polyline class="cl-base" points="390,852 452,802 522,828 584,784 652,814 612,868"/><polyline class="cl" pathLength="1" points="390,852 452,802 522,828 584,784 652,814 612,868"/>
+        <circle class="cp" cx="390" cy="852" r="2.6"/><circle class="cp" cx="452" cy="802" r="3"/><circle class="cp" cx="522" cy="828" r="2.4"/><circle class="cp" cx="584" cy="784" r="3.4"/><circle class="cp" cx="652" cy="814" r="2.4"/><circle class="cp" cx="612" cy="868" r="2.6"/></g>
+      <g class="k3"><polyline class="cl-base" points="690,62 760,30 840,58 910,32 970,80"/><polyline class="cl" pathLength="1" points="690,62 760,30 840,58 910,32 970,80"/>
+        <circle class="cp" cx="690" cy="62" r="2.4"/><circle class="cp" cx="760" cy="30" r="3.2"/><circle class="cp" cx="840" cy="58" r="2.6"/><circle class="cp" cx="910" cy="32" r="3"/><circle class="cp" cx="970" cy="80" r="2.4"/></g>
+    </svg>
+    <i class="grain"></i>
+  </div>
+  <i class="comet"></i><div class="sky-stars" id="sky-stars"></div></div>
+<div class="shell">
+
+  <main class="stage">
 
   <!-- ===== установка движка ===== -->
   <section class="screen" id="s-setup">
     <div class="setup">
       <div class="setup-head">
-        <svg><use href="#logo"/></svg>
-        <h1>Prohod</h1>
+        <svg aria-hidden="true"><use href="#logo"/></svg>
+        <h1>NIXYZ</h1>
         <p data-t="setup.tagline"></p>
       </div>
-      <div class="group steps" id="steps">
-        <div class="row step" data-n="1"><span class="mark">1<svg><use href="#i-check"/></svg></span><div class="label"><div data-t="setup.s1"></div><div class="d" data-t="setup.s1d"></div></div></div>
-        <div class="row step" data-n="2"><span class="mark">2<svg><use href="#i-check"/></svg></span><div class="label"><div data-t="setup.s2"></div><div class="d" data-t="setup.s2d"></div></div></div>
-        <div class="row step" data-n="3"><span class="mark">3<svg><use href="#i-check"/></svg></span><div class="label"><div data-t="setup.s3"></div><div class="d" data-t="setup.s3d"></div></div></div>
-        <div class="progress" id="dl-progress"><i></i></div>
-      </div>
-      <div class="setup-status" id="setup-status"></div>
-      <div class="foot" id="setup-auto" style="text-align:center" data-t="setup.auto"></div>
-      <div class="setup-actions" id="setup-actions" hidden>
-        <button class="btn btn-primary" id="b-download" data-t="setup.retry"></button>
-        <button class="btn btn-plain" id="b-folder" data-t="setup.folder"></button>
+      <div>
+        <div class="group steps" id="steps">
+          <div class="row step" data-n="1"><span class="mark">1<svg><use href="#i-check"/></svg></span><div class="label"><div data-t="setup.s1"></div><div class="d" data-t="setup.s1d"></div></div></div>
+          <div class="row step" data-n="2"><span class="mark">2<svg><use href="#i-check"/></svg></span><div class="label"><div data-t="setup.s2"></div><div class="d" data-t="setup.s2d"></div></div></div>
+          <div class="row step" data-n="3"><span class="mark">3<svg><use href="#i-check"/></svg></span><div class="label"><div data-t="setup.s3"></div><div class="d" data-t="setup.s3d"></div></div></div>
+          <div class="progress" id="dl-progress"><i></i></div>
+        </div>
+        <div class="setup-status" id="setup-status"></div>
+        <div class="foot center" id="setup-auto" data-t="setup.auto"></div>
+        <div class="setup-actions" id="setup-actions" hidden>
+          <button class="btn btn-primary" id="b-download" data-t="setup.retry"></button>
+          <button class="btn btn-plain" id="b-folder" data-t="setup.folder"></button>
+        </div>
       </div>
     </div>
-    <div class="foot" style="text-align:center" data-t="setup.av"></div>
+    <div class="foot center setup-av" data-t="setup.av"></div>
   </section>
 
-  <!-- ===== главная ===== -->
+  <!-- ===== главная: слева кнопка-звезда и статус, справа сервисы и управление ===== -->
   <section class="screen" id="s-main">
-    <div class="bar">
-      <div class="brand"><svg><use href="#logo"/></svg>Prohod</div>
-      <div class="spacer"></div>
-      <button class="icon-btn" data-go="settings" data-t-aria="nav.settings"><svg><use href="#i-gear"/></svg></button>
-    </div>
-
-    <div class="hero">
-      <div class="orb" id="orb" data-state="off">
-        <div class="halo"></div>
-        <div class="wave"></div><div class="wave"></div><div class="wave"></div>
-        <svg class="ring" viewBox="0 0 204 204"><circle class="track" cx="102" cy="102" r="95"/><circle class="arc" id="arc" cx="102" cy="102" r="95"/></svg>
-        <button class="power" id="power" data-state="off" data-t-aria="main.power"><span class="fill"></span><span class="shine"></span><svg><use href="#i-power"/></svg></button>
+    <div class="main-grid">
+      <div class="hero">
+        <div class="orb" id="orb" data-state="off">
+          <div class="waves" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+          <div class="halo"></div>
+          <svg class="ring" viewBox="0 0 264 264" aria-hidden="true"><circle class="arc" cx="132" cy="132" r="120"/><g id="ticks"></g></svg>
+          <!-- кнопка — окно в ночное небо со знаком владельца. Знак — одна цельная фигура (тот же d, что у #mark),
+               без масок и разрезов; вписан с запасом: рамка 26×12 × 2.6 ≈ 68×31 по центру круга -->
+          <button class="power" id="power" data-state="off" data-t-aria="main.power">
+            <svg class="sky" viewBox="0 0 100 100" aria-hidden="true">
+              <defs>
+                <path id="star-d" d="M5.66451 11.2258C5.59875 9.90566 5.37991 9.07512 4.94735 8.50076C4.47062 7.8679 3.25155 7.78469 1.39239 8.25921C1.05333 8.34544 0.61256 8.47151 0.412208 8.53908C0.21237 8.60666 0.0274302 8.66112 0.00123037 8.66061C-0.0244558 8.66011 0.355186 8.45537 0.845277 8.20576C3.0137 7.09989 4.39664 6.20985 5.09428 5.47059C5.36141 5.18719 5.49806 4.9754 5.78164 4.40557C6.2106 3.54377 6.46129 2.86502 6.88203 1.42533L6.95549 1.17319L6.96115 1.76117C6.97347 3.15447 7.37983 3.99862 8.15915 4.25278C8.69701 4.42826 9.30732 4.32438 12.1806 3.56596C15.4674 2.69861 18.1675 1.977 19.9378 1.49239C20.2486 1.40768 20.6996 1.28514 20.9395 1.22059C21.1794 1.15655 21.5498 1.0562 21.7615 0.997703C21.9731 0.939208 22.528 0.787927 22.9944 0.66085C23.4609 0.533774 24.2001 0.330553 24.6378 0.209023C25.825 -0.120266 25.7762 -0.0617701 24.4842 0.393587C23.242 0.831295 19.2571 2.32343 17.5233 2.99966C13.7793 4.46054 10.4539 5.92746 8.99549 6.76102C8.15093 7.24411 7.28479 7.98489 6.86508 8.58396C6.42328 9.2143 5.99535 10.4185 5.74465 11.7377C5.70869 11.9263 5.69533 11.8395 5.66451 11.2258Z"/>
+                <!-- блик ограничен собственным контуром звезды — форму он не режет -->
+                <clipPath id="star-clip"><use href="#star-d"/></clipPath>
+                <!-- сияние — размытая копия самой звезды: дальнее мягкое и ближнее плотное, поэтому идёт ровно по её контуру.
+                     Морфология чуть утолщает фигуру, иначе тонкий росчерк светился бы слабее, чем середина -->
+                <filter id="halo-far" x="-30%" y="-90%" width="160%" height="280%"><feMorphology operator="dilate" radius=".22"/><feGaussianBlur stdDeviation="1.25"/></filter>
+                <filter id="halo-near" x="-15%" y="-40%" width="130%" height="180%"><feMorphology operator="dilate" radius=".08"/><feGaussianBlur stdDeviation=".42"/></filter>
+                <!-- «чернила» звезды в светлой теме: глубокий индиго → светлее к острию -->
+                <linearGradient id="star-ink" gradientUnits="userSpaceOnUse" x1="0" y1="12" x2="26" y2="0"><stop offset="0" stop-color="#1B1F4B"/><stop offset="1" stop-color="#3B3F8F"/></linearGradient>
+                <linearGradient id="sheen-grad" x1="0" y1="0" x2="1" y2="0"><stop offset="0" class="sh-a"/><stop offset=".5" class="sh-b"/><stop offset="1" class="sh-c"/></linearGradient>
+              </defs>
+              <g class="sky-dust"><circle cx="24" cy="30" r=".6"/><circle cx="71" cy="20" r=".5"/><circle cx="82" cy="66" r=".7"/><circle cx="35" cy="78" r=".45"/><circle cx="57" cy="84" r=".5"/><circle cx="16" cy="56" r=".4"/></g>
+              <g transform="translate(16.2 34.4) scale(2.6)">
+                <g class="s-glow"><use href="#star-d" filter="url(#halo-far)" opacity=".55"/><use href="#star-d" filter="url(#halo-near)" opacity=".8"/></g>
+                <use class="s-star" href="#star-d"/>
+                <g clip-path="url(#star-clip)"><g transform="skewX(-22)"><rect class="s-sheen" x="0" y="-6" width="7" height="24" fill="url(#sheen-grad)"/></g></g>
+              </g>
+            </svg>
+          </button>
+        </div>
+        <button class="auto-pill" id="b-auto"><svg class="ic-auto"><use href="#t-auto"/></svg><svg class="ic-stop"><use href="#t-stop"/></svg><span id="auto-label"></span></button>
+        <div class="status">
+          <div class="status-title" id="title"></div>
+          <div class="status-sub" id="sub"></div>
+          <div class="uptime" id="uptime"><i></i><span id="uptime-text"></span></div>
+        </div>
+        <button class="diag-link" id="b-diag"><svg><use href="#t-help"/></svg><span data-t="diag.open"></span></button>
       </div>
-      <button class="pill" id="b-auto"><svg><use href="#t-spark"/></svg><span id="auto-label"></span></button>
-      <div class="status-title" id="title"></div>
-      <div class="status-sub" id="sub"></div>
-      <div class="uptime" id="uptime"><i></i><span id="uptime-text"></span></div>
-      <div class="services">
-        <div class="svc" id="p-YouTube" data-tone="idle"><svg><use href="#i-yt"/></svg>YouTube<span class="note"></span>
-          <span class="badge"><svg class="b-ok" viewBox="0 0 24 24"><path class="draw" d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg><svg class="b-warn" viewBox="0 0 24 24"><path d="M12 6v7m0 4.5v.5" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/></svg><svg class="b-bad" viewBox="0 0 24 24"><path d="m7 7 10 10M17 7 7 17" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/></svg></span></div>
-        <div class="svc" id="p-Discord" data-tone="idle"><svg><use href="#i-dc"/></svg>Discord<span class="note"></span>
-          <span class="badge"><svg class="b-ok" viewBox="0 0 24 24"><path class="draw" d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg><svg class="b-warn" viewBox="0 0 24 24"><path d="M12 6v7m0 4.5v.5" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/></svg><svg class="b-bad" viewBox="0 0 24 24"><path d="m7 7 10 10M17 7 7 17" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/></svg></span></div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2 data-t="main.services"></h2>
+          <button class="pill-btn" id="b-check" data-t-aria="main.checkd"><svg><use href="#t-pulse"/></svg><span data-t="main.check"></span></button>
+        </div>
+        <!-- id плитки = p-<имя сервиса> из s.pills; тон и «2/3» ставит app.js -->
+        <div class="services">
+          <div class="svc" id="p-YouTube" data-tone="idle"><span class="ic"><svg><use href="#i-yt"/></svg><span class="badge"><svg class="b-ok" viewBox="0 0 24 24"><path class="draw" d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg><svg class="b-warn"><use href="#i-bang"/></svg><svg class="b-bad"><use href="#i-close"/></svg><svg class="b-geo"><use href="#t-globe"/></svg></span></span>
+            <span class="txt"><b>YouTube</b><span class="sub"><span class="st" data-t="tone.idle"></span><span class="note"></span></span></span></div>
+          <div class="svc" id="p-Discord" data-tone="idle"><span class="ic"><svg><use href="#i-dc"/></svg><span class="badge"><svg class="b-ok" viewBox="0 0 24 24"><path class="draw" d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg><svg class="b-warn"><use href="#i-bang"/></svg><svg class="b-bad"><use href="#i-close"/></svg><svg class="b-geo"><use href="#t-globe"/></svg></span></span>
+            <span class="txt"><b>Discord</b><span class="sub"><span class="st" data-t="tone.idle"></span><span class="note"></span></span></span></div>
+          <div class="svc" id="p-Cloudflare" data-tone="idle"><span class="ic"><svg><use href="#i-cf"/></svg><span class="badge"><svg class="b-ok" viewBox="0 0 24 24"><path class="draw" d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg><svg class="b-warn"><use href="#i-bang"/></svg><svg class="b-bad"><use href="#i-close"/></svg><svg class="b-geo"><use href="#t-globe"/></svg></span></span>
+            <span class="txt"><b>Cloudflare</b><span class="sub"><span class="st" data-t="tone.idle"></span><span class="note"></span></span></span></div>
+          <!-- «ИИ»: общий итог по всем ИИ (его считает app.js из строк списка); наведение или фокус открывает список.
+               Строки списка — p-<имя> из s.pills, как обычные плитки; новые ИИ добавляются такой же строкой -->
+          <div class="svc svc-ai" id="p-AI" data-tone="idle" tabindex="0" aria-describedby="ai-pop">
+            <span class="ic"><svg><use href="#i-ai"/></svg><span class="badge"><svg class="b-ok" viewBox="0 0 24 24"><path class="draw" d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg><svg class="b-warn"><use href="#i-bang"/></svg><svg class="b-bad"><use href="#i-close"/></svg><svg class="b-geo"><use href="#t-globe"/></svg></span></span>
+            <span class="txt"><b data-t="svc.ai"></b><span class="sub"><span class="st" id="ai-sum" data-t="ai.sum_idle"></span><span class="note"></span></span></span>
+            <span class="ai-minis" aria-hidden="true"><svg><use href="#i-gpt"/></svg><svg><use href="#i-cl"/></svg><svg><use href="#i-grok"/></svg></span>
+            <div class="ai-pop" id="ai-pop" role="tooltip">
+              <div class="ai-item" id="p-ChatGPT" data-tone="idle"><svg><use href="#i-gpt"/></svg><span>ChatGPT <span class="isub"><span class="st" data-t="tone.idle"></span><span class="note"></span></span></span><i class="dot"></i></div>
+              <div class="ai-item" id="p-Claude" data-tone="idle"><svg><use href="#i-cl"/></svg><span>Claude <span class="isub"><span class="st" data-t="tone.idle"></span><span class="note"></span></span></span><i class="dot"></i></div>
+              <div class="ai-item" id="p-Grok" data-tone="idle"><svg><use href="#i-grok"/></svg><span>Grok <span class="isub"><span class="st" data-t="tone.idle"></span><span class="note"></span></span></span><i class="dot"></i></div>
+              <div class="ai-more" data-t="ai.more"></div>
+              <div class="geo-hint" id="geo-hint" hidden><svg><use href="#t-globe"/></svg><span data-t="svc.geo_hint"></span></div>
+            </div>
+          </div>
+        </div>
+        <div class="svc-more" data-t="svc.more"></div>
+
+        <!-- «Умный обход»: один переключатель smart — ИИ через умный DNS. Свой DNS-сервер — в Настройках → «Умный обход» -->
+        <div class="smart" id="smart">
+          <div class="row smart-head"><svg class="ico"><use href="#t-route"/></svg>
+            <div class="label"><div><span data-t="smart.title"></span>
+                <button class="icon-link" id="b-smart-how" aria-expanded="false" data-t-aria="smart.how_btn"><svg><use href="#t-help"/></svg></button></div>
+              <div class="d" data-t="smart.d"></div></div>
+            <button class="icon-link" id="b-smart-setup" data-go="settings" data-t-aria="smart.setup"><svg><use href="#i-gear"/></svg></button>
+            <button class="switch" role="switch" data-key="smart" aria-checked="false" data-t-aria="smart.title"></button></div>
+          <div class="smart-note" id="smart-note" data-t="smart.note"></div>
+          <div class="how" id="smart-how"><div><p data-t="smart.how"></p></div></div>
+        </div>
+
+        <div class="controls">
+          <button class="row" id="select" aria-haspopup="listbox" aria-expanded="false">
+            <svg class="ico"><use href="#t-sliders"/></svg>
+            <span class="label" data-t="main.strategy"></span><span class="value" id="strategy">—</span><svg class="chev"><use href="#i-down"/></svg>
+          </button>
+          <div class="row"><svg class="ico"><use href="#t-game"/></svg><div class="label"><div data-t="set.game"></div><div class="d" data-t="set.gamed"></div></div><button class="switch" role="switch" data-key="game" aria-checked="false" data-t-aria="set.game"></button></div>
+        </div>
+        <div class="foot" id="auto-note"></div>
       </div>
     </div>
-
-    <div class="group">
-      <button class="row" id="select" aria-haspopup="listbox" aria-expanded="false">
-        <span class="tile" style="--c: var(--blue)"><svg><use href="#t-sliders"/></svg></span>
-        <span class="label" data-t="main.strategy"></span><span class="value" id="strategy">—</span><svg class="chev"><use href="#i-down"/></svg>
-      </button>
-      <button class="row accent" id="b-check">
-        <span class="tile" style="--c: var(--green)"><svg><use href="#t-pulse"/></svg></span>
-        <span class="label"><div data-t="main.check"></div><div class="d" data-t="main.checkd"></div></span>
-      </button>
-    </div>
-    <div class="foot" id="auto-note"></div>
   </section>
 
-  <!-- ===== настройки ===== -->
+  <!-- ===== ускорение интернета ===== -->
+  <section class="screen" id="s-boost">
+    <header class="page-head"><h1 class="page-title" data-t="nav.boost"></h1></header>
+    <div class="boost-grid">
+      <div class="boost-left">
+        <div class="gauge-card" id="gauge" data-state="idle">
+          <!-- центр дуги (120, 122), радиус 100; деления и подписи шкалы дорисовывает app.js -->
+          <svg class="gauge" viewBox="0 0 240 136" aria-hidden="true">
+            <path class="g-track" d="M20 122a100 100 0 0 1 200 0" pathLength="100"/>
+            <g class="g-scale" id="g-scale"></g>
+            <path class="g-glow" id="g-glow" d="M20 122a100 100 0 0 1 200 0" pathLength="100" filter="url(#g-blur)"/>
+            <path class="g-arc" id="g-arc" d="M20 122a100 100 0 0 1 200 0" pathLength="100"/>
+            <g class="g-tip"><circle class="g-halo" cx="20" cy="122" r="10"/><circle class="g-knob" cx="20" cy="122" r="4.5"/></g>
+          </svg>
+          <div class="g-num"><span id="g-down">—</span><small data-t="boost.mbps"></small></div>
+          <div class="g-meta"><span id="g-ping"></span><span id="g-delta"></span></div>
+          <div class="g-src" id="g-src">
+            <div class="src" data-src="cloudflare"><b>Cloudflare</b><span class="v"></span><span class="p"></span></div>
+            <div class="src" data-src="yandex"><b data-t="boost.yandex"></b><span class="v"></span><span class="p"></span></div>
+            <div class="src" data-src="selectel"><b>Selectel</b><span class="v"></span><span class="p"></span></div>
+          </div>
+          <button class="measure" id="b-speed"><svg><use href="#t-pulse"/></svg><span id="speed-label"></span></button>
+          <div class="g-note" data-t="boost.speedd"></div>
+        </div>
+        <button class="cta" id="b-boost-all"><svg class="ic-go"><use href="#t-bolt-f"/></svg><svg class="ic-undo"><use href="#i-undo"/></svg><span id="boost-label"></span></button>
+        <div class="foot center" id="boost-note"></div>
+      </div>
+
+      <div class="boost-right">
+        <div class="group-label with-act"><span data-t="boost.dns"></span><button class="refresh" id="b-rescan"><svg><use href="#i-refresh"/></svg><span data-t="boost.rescan"></span></button></div>
+        <div class="group" id="dns-list"></div>
+        <div class="foot" data-t="boost.dnsd"></div>
+
+        <div class="group-label" data-t="boost.tune"></div>
+        <div class="group">
+          <div class="row"><svg class="ico"><use href="#t-wifi"/></svg><div class="label"><div data-t="boost.wifi"></div><div class="d" id="wifi-d"></div></div><button class="switch" role="switch" data-net="wifi" aria-checked="false" data-t-aria="boost.wifi"></button></div>
+          <div class="row"><svg class="ico"><use href="#t-sliders"/></svg><div class="label"><div data-t="boost.tcp"></div><div class="d" data-t="boost.tcpd"></div></div><button class="switch" role="switch" data-net="tcp" aria-checked="false" data-t-aria="boost.tcp"></button></div>
+          <button class="row" id="b-flush"><svg class="ico"><use href="#t-broom"/></svg><span class="label"><div data-t="boost.flush"></div><div class="d" data-t="boost.flushd"></div></span><span class="act" data-t="boost.flush_btn"></span></button>
+          <button class="row" id="b-reset"><svg class="ico"><use href="#i-undo"/></svg><span class="label"><div data-t="boost.reset"></div><div class="d" data-t="boost.resetd"></div></span><span class="act danger-act" data-t="boost.reset_btn"></span></button>
+        </div>
+        <div class="foot" data-t="boost.honest"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== списки: свои сайты для обхода и исключения ===== -->
+  <section class="screen" id="s-lists">
+    <header class="page-head"><h1 class="page-title" data-t="nav.lists"></h1></header>
+    <div class="lists-grid">
+      <div class="lists-main">
+        <!-- проверка одного сайта: домен → «Проверить» → вердикт и «Добавить в обход» -->
+        <div class="probe">
+          <svg aria-hidden="true"><use href="#t-search"/></svg>
+          <input id="list-probe" type="text" spellcheck="false" autocomplete="off" data-t-ph="lists.probe_ph" data-t-aria="lists.probe_ph">
+          <button class="btn btn-primary" id="b-probe" type="button" data-t="lists.probe"></button>
+        </div>
+        <!-- вердикт проверки сайта: появляется после «Проверить» -->
+        <div class="probe-result" id="probe-result" data-tone="bad" hidden>
+          <span class="mark"><svg><use href="#i-close"/></svg></span>
+          <span class="dom"></span>
+          <span class="verdict"></span>
+          <button class="act" id="b-probe-add" data-t="lists.add"></button>
+        </div>
+
+        <div class="seg list-tabs" id="list-tabs">
+          <button data-list="general" aria-pressed="true" data-t="lists.general"></button>
+          <button data-list="exclude" aria-pressed="false" data-t="lists.exclude"></button>
+          <button data-list="ipexclude" aria-pressed="false" data-t="lists.ipexclude"></button>
+        </div>
+        <div class="editor">
+          <div class="editor-body">
+            <div class="gutter" id="list-gutter" aria-hidden="true"></div>
+            <textarea id="list-editor" spellcheck="false" wrap="off" data-t-aria="nav.lists"></textarea>
+          </div>
+          <div class="editor-foot">
+            <span class="hint" id="list-hint"></span>
+            <span id="list-count"></span>
+            <button class="btn btn-primary" id="b-list-save"><span data-t="lists.save"></span><kbd>Ctrl+S</kbd></button>
+          </div>
+        </div>
+      </div>
+
+      <aside class="lists-aside">
+        <div class="group-label" data-t="lists.about"></div>
+        <div class="group">
+          <ul class="facts">
+            <li><svg class="ico"><use href="#t-bolt"/></svg><div><div data-t="lists.general"></div><div class="d" data-t="lists.general_d"></div></div></li>
+            <li><svg class="ico"><use href="#t-shield"/></svg><div><div data-t="lists.exclude"></div><div class="d" data-t="lists.exclude_d"></div></div></li>
+            <li><svg class="ico"><use href="#t-cube"/></svg><div><div data-t="lists.ipexclude"></div><div class="d" data-t="lists.ipexclude_d"></div></div></li>
+          </ul>
+        </div>
+        <div class="foot" data-t="lists.note"></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ===== настройки: блоки сами раскладываются по колонкам ===== -->
   <section class="screen" id="s-settings">
-    <div class="bar"><button class="back-link" data-go="main"><svg><use href="#i-back"/></svg><span data-t="nav.back"></span></button></div>
-    <div class="large-title" data-t="nav.settings"></div>
+    <header class="page-head"><h1 class="page-title" data-t="nav.settings"></h1></header>
+    <div class="masonry">
+      <div class="blk">
+        <div class="group-label" data-t="set.general"></div>
+        <div class="group">
+          <div class="row"><svg class="ico"><use href="#t-bolt"/></svg><div class="label"><div data-t="set.open"></div><div class="d" data-t="set.opend"></div></div><button class="switch" role="switch" data-key="open" aria-checked="false" data-t-aria="set.open"></button></div>
+          <div class="row"><svg class="ico"><use href="#t-win"/></svg><div class="label"><div data-t="set.auto"></div><div class="d" data-t="set.autod"></div></div><button class="switch" role="switch" data-key="autostart" aria-checked="false" data-t-aria="set.auto"></button></div>
+          <div class="row"><svg class="ico"><use href="#t-spark"/></svg><div class="label"><div data-t="set.buddy"></div><div class="d" data-t="set.buddyd"></div></div><button class="switch" role="switch" data-key="buddy" data-def="1" aria-checked="true" data-t-aria="set.buddy"></button></div>
+        </div>
+      </div>
 
-    <div class="group">
-      <div class="row"><span class="tile" style="--c: var(--orange)"><svg><use href="#t-game"/></svg></span><div class="label"><div data-t="set.game"></div><div class="d" data-t="set.gamed"></div></div><button class="switch" role="switch" data-key="game" aria-checked="false" data-t-aria="set.game"></button></div>
-      <div class="row"><span class="tile" style="--c: var(--green)"><svg><use href="#t-bolt"/></svg></span><div class="label"><div data-t="set.open"></div><div class="d" data-t="set.opend"></div></div><button class="switch" role="switch" data-key="open" aria-checked="false" data-t-aria="set.open"></button></div>
-      <div class="row"><span class="tile" style="--c: var(--blue)"><svg><use href="#t-win"/></svg></span><div class="label"><div data-t="set.auto"></div><div class="d" data-t="set.autod"></div></div><button class="switch" role="switch" data-key="autostart" aria-checked="false" data-t-aria="set.auto"></button></div>
+      <div class="blk">
+        <div class="group-label" data-t="set.guard"></div>
+        <div class="group">
+          <div class="row"><svg class="ico"><use href="#t-watch"/></svg><div class="label"><div data-t="set.watch"></div><div class="d" data-t="set.watchd"></div></div><button class="switch" role="switch" data-key="watch" aria-checked="false" data-t-aria="set.watch"></button></div>
+          <div class="row nested"><svg class="ico"><use href="#t-moon"/></svg><div class="label" data-t="set.nightly"></div><button class="switch" role="switch" data-key="nightly" aria-checked="false" data-t-aria="set.nightly"></button></div>
+          <div class="row"><svg class="ico"><use href="#i-undo"/></svg><div class="label"><div data-t="set.rollback"></div><div class="d" data-t="set.rollbackd"></div></div><button class="switch" role="switch" data-key="rollback" aria-checked="false" data-t-aria="set.rollback"></button></div>
+        </div>
+      </div>
+
+      <div class="blk">
+        <div class="group-label" data-t="set.look"></div>
+        <div class="group">
+          <div class="row stack"><svg class="ico"><use href="#t-globe"/></svg><div class="label" data-t="set.lang"></div>
+            <div class="seg" data-pref="lang"><button data-v="auto" data-t="set.auto_opt"></button><button data-v="ru">Русский</button><button data-v="en">English</button></div>
+            <div class="d" data-t="set.langd"></div></div>
+          <div class="row stack"><svg class="ico"><use href="#t-theme"/></svg><div class="label" data-t="set.theme"></div>
+            <div class="seg" data-pref="theme"><button data-v="auto" data-t="set.auto_opt"></button><button data-v="light" data-t="set.light"></button><button data-v="dark" data-t="set.dark"></button></div></div>
+        </div>
+      </div>
+
+      <div class="blk">
+        <div class="group-label" data-t="set.notify_g"></div>
+        <div class="group">
+          <div class="row"><svg class="ico"><use href="#t-bell"/></svg><div class="label"><div data-t="set.notify"></div><div class="d" data-t="set.notifyd"></div></div><button class="switch" role="switch" data-key="notify" aria-checked="false" data-t-aria="set.notify"></button></div>
+        </div>
+      </div>
+
+      <div class="blk">
+        <!-- «Умный обход»: на главной — только переключатель, здесь — какой DNS использовать -->
+        <div class="group-label" id="set-smart" data-t="smart.title"></div>
+        <div class="group">
+          <div class="row stack"><svg class="ico"><use href="#t-dns"/></svg><div class="label"><div data-t="set.aidns"></div></div>
+            <div class="seg" data-pref="smart_dns" id="smart-dns"><button data-v="builtin" aria-pressed="true" data-t="set.dns_builtin"></button><button data-v="custom" aria-pressed="false" data-t="set.dns_custom"></button></div>
+            <div class="d"><span data-t="set.aidnsd"></span>
+              <input class="field" id="ai-dns" type="text" spellcheck="false" autocomplete="off" data-t-ph="set.aidns_ph" data-t-aria="set.aidns"></div></div>
+        </div>
+        <div class="foot" data-t="set.smart_list"></div>
+      </div>
+
+      <div class="blk">
+        <div class="group-label" data-t="set.data"></div>
+        <div class="group">
+          <button class="row" id="b-export"><svg class="ico"><use href="#t-upload"/></svg><span class="label" data-t="set.export"></span><svg class="chev"><use href="#i-chev"/></svg></button>
+          <button class="row" id="b-import"><svg class="ico"><use href="#t-update"/></svg><span class="label" data-t="set.import"></span><svg class="chev"><use href="#i-chev"/></svg></button>
+          <button class="row" id="b-report"><svg class="ico"><use href="#t-report"/></svg><span class="label"><div data-t="set.report"></div><div class="d" data-t="set.reportd"></div></span><svg class="chev"><use href="#i-chev"/></svg></button>
+        </div>
+      </div>
+
+      <div class="blk">
+        <div class="group-label" data-t="set.engine"></div>
+        <div class="group">
+          <div class="row"><svg class="ico"><use href="#t-cube"/></svg><span class="label" data-t="set.version"></span><span class="value" id="engine"></span></div>
+          <button class="row" id="b-update"><svg class="ico"><use href="#t-update"/></svg><span class="label" data-t="set.update"></span><svg class="chev"><use href="#i-chev"/></svg></button>
+          <button class="row" id="b-hashes" aria-expanded="false"><svg class="ico"><use href="#t-shield"/></svg><span class="label" data-t="set.hashes"></span><svg class="chev" id="hash-chev"><use href="#i-down"/></svg></button>
+          <div class="hashes" id="sec-kv" hidden></div>
+          <button class="row" id="b-open"><svg class="ico"><use href="#t-folder"/></svg><span class="label" data-t="set.open_dir"></span><svg class="chev"><use href="#i-chev"/></svg></button>
+          <button class="row" id="b-folder2"><svg class="ico"><use href="#t-swap"/></svg><span class="label" data-t="set.change_dir"></span><svg class="chev"><use href="#i-chev"/></svg></button>
+          <button class="row" id="b-repo"><svg class="ico"><use href="#t-code"/></svg><span class="label" data-t="set.repo"></span><span class="value">GitHub</span></button>
+        </div>
+      </div>
+
+      <div class="blk">
+        <div class="group-label" data-t="set.privacy"></div>
+        <div class="group">
+          <ul class="facts">
+            <li><svg class="ico"><use href="#t-eye"/></svg><div><div data-t="f1"></div><div class="d" data-t="f1d"></div></div></li>
+            <li><svg class="ico"><use href="#t-wifi"/></svg><div><div data-t="f2"></div><div class="d" data-t="f2d"></div></div></li>
+            <li><svg class="ico"><use href="#t-shield"/></svg><div><div data-t="f3"></div><div class="d" data-t="f3d"></div></div></li>
+          </ul>
+        </div>
+        <div class="group">
+          <button class="row" id="b-terms"><svg class="ico"><use href="#t-report"/></svg><span class="label" data-t="legal.terms"></span></button>
+          <button class="row" id="b-policy"><svg class="ico"><use href="#t-eye"/></svg><span class="label" data-t="legal.privacy"></span></button>
+        </div>
+      </div>
+
+      <div class="blk">
+        <div class="group"><button class="row danger" id="b-uninstall"><span data-t="set.uninstall"></span></button></div>
+        <div class="about"><svg aria-hidden="true"><use href="#logo"/></svg><span id="about"></span></div>
+      </div>
     </div>
-
-    <div class="group-label" data-t="set.look"></div>
-    <div class="group">
-      <div class="row stack"><span class="tile" style="--c: var(--teal)"><svg><use href="#t-globe"/></svg></span><div class="label" data-t="set.lang"></div>
-        <div class="seg" data-pref="lang"><button data-v="auto" data-t="set.auto_opt"></button><button data-v="ru">Русский</button><button data-v="en">English</button></div>
-        <div class="d" data-t="set.langd"></div></div>
-      <div class="row stack"><span class="tile" style="--c: var(--indigo)"><svg><use href="#t-theme"/></svg></span><div class="label" data-t="set.theme"></div>
-        <div class="seg" data-pref="theme"><button data-v="auto" data-t="set.auto_opt"></button><button data-v="light" data-t="set.light"></button><button data-v="dark" data-t="set.dark"></button></div></div>
-    </div>
-
-    <div class="group-label" data-t="set.engine"></div>
-    <div class="group">
-      <div class="row"><span class="tile"><svg><use href="#t-cube"/></svg></span><span class="label" data-t="set.version"></span><span class="value" id="engine"></span></div>
-      <button class="row" id="b-update"><span class="tile" style="--c: var(--blue)"><svg><use href="#t-update"/></svg></span><span class="label" data-t="set.update"></span><svg class="chev"><use href="#i-chev"/></svg></button>
-      <button class="row" data-go="log"><span class="tile"><svg><use href="#t-list"/></svg></span><span class="label" data-t="set.log"></span><svg class="chev"><use href="#i-chev"/></svg></button>
-      <button class="row" id="b-hashes" aria-expanded="false"><span class="tile" style="--c: var(--green)"><svg><use href="#t-shield"/></svg></span><span class="label" data-t="set.hashes"></span><svg class="chev" id="hash-chev"><use href="#i-down"/></svg></button>
-      <div class="hashes" id="sec-kv" hidden></div>
-      <button class="row" id="b-open"><span class="tile" style="--c: var(--teal)"><svg><use href="#t-folder"/></svg></span><span class="label" data-t="set.open_dir"></span><svg class="chev"><use href="#i-chev"/></svg></button>
-      <button class="row" id="b-folder2"><span class="tile" style="--c: var(--indigo)"><svg><use href="#t-swap"/></svg></span><span class="label" data-t="set.change_dir"></span><svg class="chev"><use href="#i-chev"/></svg></button>
-      <button class="row" id="b-repo"><span class="tile"><svg><use href="#t-code"/></svg></span><span class="label" data-t="set.repo"></span><span class="value">GitHub</span></button>
-    </div>
-
-    <div class="group-label" data-t="set.privacy"></div>
-    <div class="group">
-      <ul class="facts">
-        <li><span class="tile" style="--c: var(--blue)"><svg><use href="#t-eye"/></svg></span><div><div data-t="f1"></div><div class="d" data-t="f1d"></div></div></li>
-        <li><span class="tile" style="--c: var(--teal)"><svg><use href="#t-wifi"/></svg></span><div><div data-t="f2"></div><div class="d" data-t="f2d"></div></div></li>
-        <li><span class="tile" style="--c: var(--green)"><svg><use href="#t-shield"/></svg></span><div><div data-t="f3"></div><div class="d" data-t="f3d"></div></div></li>
-      </ul>
-    </div>
-
-    <div class="group" style="margin-top:26px"><button class="row danger" id="b-uninstall"><span data-t="set.uninstall"></span></button></div>
-    <div class="about"><svg><use href="#logo"/></svg><span id="about"></span></div>
   </section>
 
   <!-- ===== журнал ===== -->
   <section class="screen" id="s-log">
-    <div class="bar">
-      <button class="back-link" data-go="settings"><svg><use href="#i-back"/></svg><span data-t="nav.settings"></span></button>
+    <header class="page-head">
+      <h1 class="page-title" data-t="set.log"></h1>
       <div class="spacer"></div>
       <button class="bar-action" id="b-copy" data-t="log.copy"></button>
-    </div>
-    <div class="large-title" data-t="set.log"></div>
+    </header>
     <div class="log" id="log"></div>
   </section>
+
+  </main>
+
+  <!-- ===== нижняя строка: знак слева, док по центру (состояние обхода + разделы), справа — «дом» NIXY ===== -->
+  <footer class="bottom">
+    <div class="dock-group">
+    <div class="dock">
+      <button class="side-state" data-go="main"><i></i><span id="side-state"></span></button>
+      <i class="sep" aria-hidden="true"></i>
+      <nav class="nav" aria-label="NIXYZ">
+        <button data-go="main"><svg class="ic-home"><use href="#t-home"/></svg><span data-t="nav.main"></span></button>
+        <button id="b-boost" data-go="boost"><svg><use href="#t-gauge"/></svg><span data-t="nav.boost"></span><i class="dot"></i></button>
+        <button data-go="lists"><svg><use href="#t-lists"/></svg><span data-t="nav.lists"></span></button>
+        <button data-go="settings"><svg><use href="#i-gear"/></svg><span data-t="nav.settings"></span></button>
+        <button data-go="log"><svg><use href="#t-list"/></svg><span data-t="set.log"></span></button>
+      </nav>
+    </div>
+    <div class="buddy-home" id="buddy-home" aria-hidden="true"></div>
+    </div>
+    <div class="brand"><svg aria-hidden="true"><use href="#logo"/></svg>NIXYZ</div>
+  </footer>
 </div>
 
+<!-- ===== диагностика «Почему не работает?»: проверки по порядку, у проблем — «Исправить».
+     Строки ниже — пример для показа; настоящий список и состояния поставит логика ===== -->
+<div class="diag" id="diag" role="dialog" aria-modal="true" aria-labelledby="diag-title"><div class="diag-card">
+  <div class="diag-head">
+    <div><h2 id="diag-title" data-t="diag.open"></h2><p data-t="diag.sub"></p></div>
+    <button class="close" id="diag-close" data-t-aria="diag.close"><svg><use href="#i-close"/></svg></button>
+  </div>
+  <ul class="diag-list" id="diag-list">
+    <li class="check" data-check="engine" data-state="ok"><span class="st-ico"><svg class="i-ok"><use href="#i-check"/></svg><svg class="i-pr"><use href="#i-bang"/></svg></span><div class="label"><div data-t="diag.engine"></div><div class="d" data-t="diag.engine_d"></div></div><button class="fix" data-t="diag.fix"></button></li>
+    <li class="check" data-check="admin" data-state="ok"><span class="st-ico"><svg class="i-ok"><use href="#i-check"/></svg><svg class="i-pr"><use href="#i-bang"/></svg></span><div class="label"><div data-t="diag.admin"></div><div class="d" data-t="diag.admin_d"></div></div><button class="fix" data-t="diag.fix"></button></li>
+    <li class="check" data-check="dpi" data-state="problem"><span class="st-ico"><svg class="i-ok"><use href="#i-check"/></svg><svg class="i-pr"><use href="#i-bang"/></svg></span><div class="label"><div data-t="diag.dpi"></div><div class="d" data-t="diag.dpi_bad"></div></div><button class="fix" data-t="diag.fix"></button></li>
+    <li class="check" data-check="dns" data-state="ok"><span class="st-ico"><svg class="i-ok"><use href="#i-check"/></svg><svg class="i-pr"><use href="#i-bang"/></svg></span><div class="label"><div data-t="diag.dns"></div><div class="d" data-t="diag.dns_d"></div></div><button class="fix" data-t="diag.fix"></button></li>
+    <li class="check" data-check="time" data-state="problem"><span class="st-ico"><svg class="i-ok"><use href="#i-check"/></svg><svg class="i-pr"><use href="#i-bang"/></svg></span><div class="label"><div data-t="diag.time"></div><div class="d" data-t="diag.time_bad"></div></div><button class="fix" data-t="diag.fix"></button></li>
+    <li class="check" data-check="strategy" data-state="wait"><span class="st-ico"><svg class="i-ok"><use href="#i-check"/></svg><svg class="i-pr"><use href="#i-bang"/></svg></span><div class="label"><div data-t="diag.strategy"></div><div class="d" data-t="diag.strategy_d"></div></div><button class="fix" data-t="diag.fix"></button></li>
+  </ul>
+  <div class="diag-foot">
+    <div class="foot" data-t="diag.note"></div>
+    <button class="btn btn-plain" id="diag-rerun" data-t="diag.rerun"></button>
+  </div>
+</div></div>
+
 <div class="popover" id="popover" role="listbox"></div>
+<div class="pop-menu nixy-menu" id="nixy-menu" role="menu" hidden></div>
 <div class="scrim" id="scrim"><div class="alert" role="alertdialog" aria-modal="true">
   <p id="dlg-text"></p>
   <div class="acts" id="dlg-acts"></div>
 </div></div>
 <div class="upd" id="upd" role="dialog" aria-modal="true" aria-labelledby="upd-title"><div class="upd-card">
-  <div class="grabber"></div>
-  <div class="upd-icon"><svg><use href="#t-update"/></svg></div>
+  <svg class="upd-icon" aria-hidden="true"><use href="#logo"/></svg>
   <h2 id="upd-title" data-t="upd.title"></h2>
   <div class="sub" data-t="upd.sub"></div>
   <div class="vers"><span id="upd-from"></span><svg><use href="#i-arrow"/></svg><span class="new" id="upd-to"></span></div>
-  <button class="disclosure" id="upd-more" aria-expanded="false"><span id="upd-more-label"></span><svg><use href="#i-down"/></svg></button>
+  <button class="disclosure" id="upd-more" aria-expanded="false"><span id="upd-more-label"></span><span class="count" id="upd-count"></span><svg><use href="#i-down"/></svg></button>
   <div class="notes"><div><ol id="upd-list"></ol><div class="empty" id="upd-empty" hidden data-t="upd.empty"></div></div></div>
-  <button class="btn btn-primary" id="upd-apply" data-t="upd.apply"></button>
-  <button class="btn btn-plain" id="upd-later" data-t="upd.later"></button>
+  <div class="upd-acts">
+    <button class="btn btn-primary" id="upd-apply" data-t="upd.apply"></button>
+    <button class="btn btn-plain" id="upd-later" data-t="upd.later"></button>
+  </div>
   <button class="skip" id="upd-skip" data-t="upd.skip"></button>
 </div></div>
+<div class="upd legal" id="legal" role="dialog" aria-modal="true" aria-labelledby="legal-title"><div class="upd-card">
+  <h2 id="legal-title"></h2>
+  <div class="legal-text" id="legal-text" tabindex="0"></div>
+  <div class="upd-acts"><button class="btn btn-primary" id="legal-close" data-t="legal.close"></button></div>
+</div></div>
+<!-- ===== NIXY: белая мягкая «зефирка» без рамок, глаза — тёмные звёздочки из знака ===== -->
+<div class="buddy-wrap" id="buddy-wrap" data-mood="idle"><i class="buddy-shadow"></i><div class="buddy-float">
+  <button class="buddy" id="buddy" data-t-aria="buddy.name">
+    <svg viewBox="0 0 96 72" aria-hidden="true">
+      <defs>
+        <!-- объём: сверху чисто белый, книзу — лёгкая лавандовая тень; блик слева сверху -->
+        <linearGradient id="bd-face" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".6" stop-color="#F3F5FD"/><stop offset="1" stop-color="#D9DFF3"/></linearGradient>
+        <radialGradient id="bd-shine" cx=".3" cy=".22" r=".5"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      </defs>
+      <g class="b-body">
+        <rect x="6" y="8" width="84" height="56" rx="26" fill="url(#bd-face)"/>
+        <rect x="6" y="8" width="84" height="56" rx="26" fill="url(#bd-shine)"/>
+        <rect class="b-tint" x="6" y="8" width="84" height="56" rx="26"/>
+        <ellipse class="b-blush" cx="19" cy="47" rx="5.5" ry="3"/><ellipse class="b-blush" cx="77" cy="47" rx="5.5" ry="3"/>
+        <g class="b-eyes">
+          <g class="b-eyewrap l"><path class="b-eye" d="M34 24.5c.85 6.5 3.55 9.2 10 10-6.45.85-9.15 3.55-10 10-.85-6.45-3.55-9.15-10-10 6.45-.8 9.15-3.5 10-10Z"/></g>
+          <g class="b-eyewrap r"><path class="b-eye" d="M62 24.5c.85 6.5 3.55 9.2 10 10-6.45.85-9.15 3.55-10 10-.85-6.45-3.55-9.15-10-10 6.45-.8 9.15-3.5 10-10Z"/></g>
+        </g>
+        <path class="b-mouth" d="M44 51.5q4 3.4 8 0"/>
+        <ellipse class="b-yawn" cx="48" cy="53" rx="3.2" ry="2.8"/>
+        <!-- запасные лица: «> <» — обиделся, спирали — голова кружится -->
+        <path class="b-x" d="M27 28.5 37 34.5 27 40.5M69 28.5 59 34.5 69 40.5"/>
+        <g class="b-spiral"><path d="M34 34.5m-1 0a1 1 0 1 1 2 0a2.2 2.2 0 1 1-4.4 0a3.6 3.6 0 1 1 7.2 0a5 5 0 1 1-10 0"/><path d="M62 34.5m-1 0a1 1 0 1 1 2 0a2.2 2.2 0 1 1-4.4 0a3.6 3.6 0 1 1 7.2 0a5 5 0 1 1-10 0"/></g>
+      </g>
+      <path class="b-heart" d="M84 20c-2.2-2.6-6-1-5.2 1.8.5 1.8 2.9 3.4 5.2 5 2.3-1.6 4.7-3.2 5.2-5C90 19 86.2 17.4 84 20Z"/>
+      <g class="b-zzz"><text x="84" y="10">z</text><text x="92" y="0" font-size="10">z</text></g>
+      <g class="b-think"><circle cx="72" cy="3" r="2.3"/><circle cx="80.5" cy="1" r="2.3"/><circle cx="89" cy="3" r="2.3"/></g>
+    </svg>
+  </button>
+</div></div>
+<div class="bubble" id="bubble" role="dialog" aria-live="polite" aria-labelledby="bubble-text">
+  <button class="close" id="bubble-close" data-t-aria="diag.close"><svg><use href="#i-close"/></svg></button>
+  <div class="bubble-text" id="bubble-text"></div>
+  <div class="bubble-acts" id="bubble-acts"></div>
+</div>
 <div class="toast" id="toast"></div>
 <div class="offline" id="offline"><div data-t="offline"></div></div>
 

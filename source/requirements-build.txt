@@ -1,4 +1,4 @@
-# Инструменты сборки Prohod.exe. Точные версии + SHA-256: pip откажется ставить подменённый пакет.
+# Инструменты сборки NIXYZ.exe. Точные версии + SHA-256: pip откажется ставить подменённый пакет.
 # pip install --require-hashes -r requirements-build.txt
 altgraph==0.17.5 --hash=sha256:f3a22400bce1b0c701683820ac4f3b159cd301acab067c51c653e06961600597
 bottle==0.13.4 --hash=sha256:045684fbd2764eac9cdeb824861d1551d113e8b683d8d26e296898d3dd99a12e

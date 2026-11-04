@@ -1,35 +1,26 @@
-"""Установщик Prohod — один файл, всё сам.
+"""Установка NIXYZ: запускается как «NIXYZ.exe --install» из временной папки установщика.
 
-Запуск (Windows спросит права администратора один раз):
-  1. сверяет SHA-256 вложенной программы (впаян при сборке) — в памяти, без временных файлов;
-  2. закрывает уже запущенный Prohod (только сам Prohod.exe из Program Files);
-  3. ставит программу в C:\\Program Files\\Prohod; настройки и движок (папка data) при
+Установщик на Inno Setup только распаковывает программу в свою защищённую папку и запускает её с этим
+флагом (nixyz.iss), а всё остальное делает этот код:
+  1. закрывает уже запущенный NIXYZ (только сам NIXYZ.exe из Program Files);
+  2. ставит программу в C:\\Program Files\\NIXYZ; настройки и движок (папка data) при
      обновлении переносятся в новую версию;
-  4. создаёт ярлыки «Prohod» в «Пуске» и на рабочем столе и запись в «Параметры → Приложения»;
-  5. запускает Prohod — дальше он сам скачает движок, подберёт стратегию и включит обход.
+  3. создаёт ярлыки «NIXYZ» в «Пуске» и на рабочем столе и запись в «Параметры → Приложения»;
+  4. запускает NIXYZ — дальше он сам скачает движок, подберёт стратегию и включит обход.
 """
 import ctypes
-import hashlib
-import io
 import os
 import shutil
 import subprocess
-import sys
-import threading
 import time
-import tkinter as tk
 import winreg
-import zipfile
 from pathlib import Path
 
-APP_NAME = "Prohod"
-APP_TITLE = "Prohod"
-APP_VERSION = "__VERSION__"          # подставляет build.py
-PAYLOAD_SHA256 = "__PAYLOAD_SHA256__"  # подставляет build.py
-EXE_NAME = "Prohod.exe"
+APP_NAME = "NIXYZ"
+APP_TITLE = "NIXYZ"
+EXE_NAME = "NIXYZ.exe"
 UNINSTALL_KEY = rf"Software\Microsoft\Windows\CurrentVersion\Uninstall\{APP_NAME}"
 NO_WINDOW = subprocess.CREATE_NO_WINDOW
-MAX_UNPACKED = 512 * 1024 * 1024
 
 
 def known_folder(csidl):
@@ -40,19 +31,9 @@ def known_folder(csidl):
 
 
 SYSTEM_DIR = known_folder(0x25)                       # C:\Windows\System32
-INSTALL_DIR = known_folder(0x26) / APP_NAME           # C:\Program Files\Prohod
+INSTALL_DIR = known_folder(0x26) / APP_NAME           # C:\Program Files\NIXYZ
 SHORTCUTS = [known_folder(0x17) / f"{APP_TITLE}.lnk",   # «Пуск» для всех пользователей
              known_folder(0x19) / f"{APP_TITLE}.lnk"]   # общий рабочий стол
-PAYLOAD = Path(getattr(sys, "_MEIPASS", Path(__file__).parent)) / "payload.zip"
-
-
-def sanitize_environment():
-    """Переменные, которые чужая программа может прописать пользователю, чтобы влезть
-    в процесс администратора (.NET-профилировщики, свои модули PowerShell и т.п.)."""
-    for key in list(os.environ):
-        if key.upper().startswith(("COR_", "COMPLUS_", "DOTNET_", "CORECLR_", "WEBVIEW2_")):
-            del os.environ[key]
-    os.environ["PSModulePath"] = str(SYSTEM_DIR / "WindowsPowerShell" / "v1.0" / "Modules")
 
 
 def tool(name):
@@ -64,14 +45,6 @@ def run(args, env=None, timeout=60):
     p = subprocess.run([tool(args[0]), *args[1:]], capture_output=True, timeout=timeout,
                        creationflags=NO_WINDOW, cwd=SYSTEM_DIR, env=env)
     return p.returncode, (p.stdout + p.stderr).decode("oem", errors="replace")
-
-
-def already_installed():
-    try:
-        winreg.CloseKey(winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, UNINSTALL_KEY))
-        return True
-    except OSError:
-        return False
 
 
 def own_processes(exe):
@@ -111,89 +84,70 @@ def close_running_app():
         time.sleep(0.25)
 
 
-def verified_payload():
-    """Программа внутри установщика читается целиком в память и сверяется с суммой,
-    впаянной при сборке. Распаковка идёт из тех же байт — подменить файл между
-    проверкой и распаковкой нельзя."""
-    data = PAYLOAD.read_bytes()
-    if not PAYLOAD_SHA256.isalnum() or len(PAYLOAD_SHA256) != 64:
-        raise RuntimeError("Установщик собран без контрольной суммы")
-    if hashlib.sha256(data).hexdigest() != PAYLOAD_SHA256:
-        raise RuntimeError("Содержимое установщика повреждено или подменено — установка отменена")
-    return data
+def rename_retry(src, dst):
+    """Переименование папки: движок или антивирус могут отпустить файлы не сразу."""
+    for attempt in range(20):
+        try:
+            return src.rename(dst)
+        except OSError:
+            if attempt == 19:
+                raise
+            time.sleep(0.25)
 
 
-def safe_extract(data, dest):
-    dest = dest.resolve()
-    written = 0
-    with zipfile.ZipFile(io.BytesIO(data)) as zf:
-        for info in zf.infolist():
-            target = (dest / info.filename).resolve()
-            if target != dest and dest not in target.parents:
-                raise RuntimeError(f"Опасный путь в архиве: {info.filename}")
-            if info.is_dir():
-                target.mkdir(parents=True, exist_ok=True)
-                continue
-            target.parent.mkdir(parents=True, exist_ok=True)
-            with zf.open(info) as src, open(target, "wb") as out:
-                while chunk := src.read(1 << 20):
-                    written += len(chunk)
-                    if written > MAX_UNPACKED:
-                        raise RuntimeError("Архив программы слишком большой")
-                    out.write(chunk)
-
-
-def place_program(data):
+def place_program(source):
+    """Копирует программу из source в Program Files. Прежняя версия заменяется целиком и только
+    после того, как новая полностью легла рядом; при сбое возвращается на место."""
     new = INSTALL_DIR.with_name(APP_NAME + ".new")
     old = INSTALL_DIR.with_name(APP_NAME + ".old")
+    keep = INSTALL_DIR / "data"  # настройки и движок — при обновлении сохраняем
+    # прошлая установка оборвалась посередине: сначала вернуть рабочую копию и данные, и только потом чистить
     if not INSTALL_DIR.exists() and old.exists():
-        old.rename(INSTALL_DIR)  # прошлая установка оборвалась посередине — вернуть рабочую копию
+        old.rename(INSTALL_DIR)
+    for leftover in (old / "data", new / "data"):
+        if leftover.is_dir() and not keep.exists():
+            INSTALL_DIR.mkdir(exist_ok=True)
+            leftover.rename(keep)
     shutil.rmtree(new, ignore_errors=True)
-    if INSTALL_DIR.exists():
-        shutil.rmtree(old, ignore_errors=True)
-    safe_extract(data, new)
+    shutil.rmtree(old, ignore_errors=True)
+    shutil.copytree(source, new, ignore=shutil.ignore_patterns("data"))
     if not (new / EXE_NAME).is_file():
-        raise RuntimeError("В установщике нет Prohod.exe — файл повреждён или его изменил антивирус")
-    keep = INSTALL_DIR / "data"  # настройки, движок, подобранная стратегия — при обновлении сохраняем
-    if keep.is_dir():
-        shutil.move(str(keep), str(new / "data"))
+        raise RuntimeError("В установщике нет NIXYZ.exe — файл повреждён или его изменил антивирус")
     if INSTALL_DIR.exists():
-        INSTALL_DIR.rename(old)
+        rename_retry(INSTALL_DIR, old)
     try:
-        new.rename(INSTALL_DIR)
+        rename_retry(new, INSTALL_DIR)
     except OSError:
         if old.exists() and not INSTALL_DIR.exists():
             old.rename(INSTALL_DIR)  # вернуть прежнюю версию
-        if (new / "data").is_dir() and not keep.exists():
-            shutil.move(str(new / "data"), str(keep))  # и её настройки
         raise
+    if (old / "data").is_dir():
+        try:
+            rename_retry(old / "data", keep)
+        except OSError as e:  # старая папка остаётся: следующий запуск установщика вернёт данные
+            raise RuntimeError(f"Программа обновлена, но настройки остались в {old}. Запустите установку ещё раз.") from e
     shutil.rmtree(old, ignore_errors=True)
 
 
 def make_shortcuts():
-    for lnk in SHORTCUTS:  # ярлыки версии 1.1.0 назывались «Проход.lnk» — убираем, чтобы не было двух
-        try:
-            lnk.with_name("Проход.lnk").unlink()
-        except OSError:
-            pass
     exe = INSTALL_DIR / EXE_NAME
     script = ("$ErrorActionPreference = 'Stop'; $w = New-Object -ComObject WScript.Shell; "
-              "foreach ($p in ($env:PROHOD_LNK -split '\\|')) { $s = $w.CreateShortcut($p); "
-              "$s.TargetPath = $env:PROHOD_EXE; $s.WorkingDirectory = $env:PROHOD_DIR; "
-              "$s.IconLocation = $env:PROHOD_EXE + ',0'; $s.Description = 'Обход блокировок YouTube и Discord'; $s.Save() }")
-    env = dict(os.environ, PROHOD_LNK="|".join(str(s) for s in SHORTCUTS), PROHOD_EXE=str(exe),
-               PROHOD_DIR=str(INSTALL_DIR))
+              "foreach ($p in ($env:NIXYZ_LNK -split '\\|')) { $s = $w.CreateShortcut($p); "
+              "$s.TargetPath = $env:NIXYZ_EXE; $s.WorkingDirectory = $env:NIXYZ_DIR; "
+              "$s.IconLocation = $env:NIXYZ_EXE + ',0'; $s.Description = 'Настройка сетевых соединений'; $s.Save() }")
+    env = dict(os.environ, NIXYZ_LNK="|".join(str(s) for s in SHORTCUTS), NIXYZ_EXE=str(exe),
+               NIXYZ_DIR=str(INSTALL_DIR))
     code, out = run(["powershell", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass",
                      "-Command", script], env=env)
     if code != 0:
         raise RuntimeError(out.strip()[:200])
 
 
-def register_uninstall():
+def register_uninstall(version):
     exe = INSTALL_DIR / EXE_NAME
     size_kb = sum(f.stat().st_size for f in INSTALL_DIR.rglob("*") if f.is_file()) // 1024
     with winreg.CreateKeyEx(winreg.HKEY_LOCAL_MACHINE, UNINSTALL_KEY, 0, winreg.KEY_WRITE) as k:
-        for name, value in (("DisplayName", APP_TITLE), ("DisplayVersion", APP_VERSION),
+        for name, value in (("DisplayName", APP_TITLE), ("DisplayVersion", version),
                             ("Publisher", APP_TITLE), ("DisplayIcon", f'"{exe}",0'),
                             ("InstallLocation", str(INSTALL_DIR)),
                             ("UninstallString", f'"{exe}" --uninstall')):
@@ -202,79 +156,34 @@ def register_uninstall():
             winreg.SetValueEx(k, name, 0, winreg.REG_DWORD, value)
 
 
-def install(report):
+def install(source, version):
     """Возвращает список предупреждений (некритичных проблем)."""
     warnings = []
-    report("Проверяю целостность…")
-    data = verified_payload()
-    report("Закрываю прежнюю версию…" if already_installed() else "Готовлю установку…")
     close_running_app()
-    report("Копирую программу в Program Files…")
-    place_program(data)
-    report("Создаю ярлыки…")
+    place_program(source)
     try:
         make_shortcuts()
     except Exception as e:
         warnings.append(f"ярлыки не созданы ({e})")
     try:
-        register_uninstall()
+        register_uninstall(version)
     except OSError as e:
         warnings.append(f"запись в «Приложениях» не создана ({e})")
-    report("Запускаю Prohod…")
     subprocess.Popen([str(INSTALL_DIR / EXE_NAME)], cwd=INSTALL_DIR)
     return warnings
 
 
-def main():
-    sanitize_environment()
+def run_install(source, version, message):
+    """Точка входа из NIXYZ.pyw. Запускать можно только из папки установщика, не из самой программы.
+    Возвращает код выхода для установщика."""
+    if Path(source).resolve() == INSTALL_DIR.resolve():
+        message("Эта команда работает только из установщика NIXYZ.", True)
+        return 1
     try:
-        ctypes.windll.shcore.SetProcessDpiAwareness(2)
-    except Exception:
-        pass
-    root = tk.Tk()
-    root.title(f"{APP_TITLE} — установка")
-    root.configure(bg="#0B0B0F")
-    root.resizable(False, False)
-    scale = root.winfo_fpixels("1i") / 96
-    w, h = int(380 * scale), int(150 * scale)
-    root.geometry(f"{w}x{h}+{(root.winfo_screenwidth() - w) // 2}+{(root.winfo_screenheight() - h) // 2}")
-    try:
-        root.iconbitmap(str(Path(getattr(sys, "_MEIPASS", ".")) / "prohod.ico"))
-    except tk.TclError:
-        pass
-    tk.Label(root, text=APP_TITLE, fg="#F5F5F7", bg="#0B0B0F",
-             font=("Segoe UI Variable Display", 18, "bold")).pack(pady=(int(22 * scale), 4))
-    status = tk.Label(root, text="Подготовка…", fg="#A1A1AA", bg="#0B0B0F", font=("Segoe UI", 10))
-    status.pack()
-    result = {}
-
-    def report(text):
-        root.after(0, lambda: status.configure(text=text))
-
-    def work():
-        try:
-            if not ctypes.windll.shell32.IsUserAnAdmin():
-                raise RuntimeError("Нужны права администратора — запустите установщик ещё раз и нажмите «Да».")
-            result["warnings"] = install(report)
-        except Exception as e:
-            result["error"] = str(e)
-        root.after(0, finish)
-
-    def finish():
-        from tkinter import messagebox
-        if "error" in result:
-            messagebox.showerror(f"{APP_TITLE} — установка", f"Установка не удалась:\n\n{result['error']}")
-            root.destroy()
-            return
-        if result.get("warnings"):
-            messagebox.showwarning(f"{APP_TITLE} — установка",
-                                   "Prohod установлен, но:\n\n" + "\n".join(result["warnings"]))
-        report("Готово")
-        root.after(900, root.destroy)
-
-    threading.Thread(target=work, daemon=True).start()
-    root.mainloop()
-
-
-if __name__ == "__main__":
-    main()
+        warnings = install(Path(source), version)
+    except Exception as e:
+        message(f"Установка не удалась:\n\n{e}", True)
+        return 1
+    if warnings:
+        message("NIXYZ установлен, но:\n\n" + "\n".join(warnings), False)
+    return 0
